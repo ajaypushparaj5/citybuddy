@@ -193,7 +193,7 @@ export default function Home() {
             </div>
           </div>
 
-          <h1 className="text-6xl lg:text-8xl font-lora text-white tracking-tight leading-tight">
+          <h1 className="text-5xl lg:text-6xl font-lora text-white tracking-tight leading-tight">
             Vibe Check Your Design
           </h1>
 
@@ -201,7 +201,7 @@ export default function Home() {
             Generate aesthetic production-ready <span className="text-white border-b border-indigo-500/50 pb-0.5">digital experiences</span> from your mood boards
           </p>
 
-          <VibeInput />
+          {/* <VibeInput /> */}
           
           <div className="mt-20 flex flex-col items-center gap-6">
              <div className="flex gap-12 grayscale opacity-30 hover:grayscale-0 hover:opacity-100 transition-all duration-700">

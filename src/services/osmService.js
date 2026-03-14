@@ -1,6 +1,6 @@
 // OSM Overpass API Service
 // Fetches free map data from OpenStreetMap
-import { supabase } from './supabaseClient';
+import { localCache } from './localCacheService';
 
 // Helper to reliably get a bounding box from a city name via Nominatim
 async function getBoundingBox(cityName) {
@@ -32,15 +32,10 @@ export async function fetchCityData(cityName) {
     const normalizedName = cityName.toLowerCase().trim();
 
     try {
-        // 0. Check Supabase Cache first
-        const { data: cacheData, error: cacheErr } = await supabase
-            .from('city_cache')
-            .select('graph_data')
-            .eq('city_name', normalizedName)
-            .single();
-
+        // 0. Check Local Cache first
+        const cacheData = await localCache.get(normalizedName);
         if (cacheData?.graph_data) {
-            console.log(`[Cache Hit] Serving city data for '${cityName}' from Supabase.`);
+            console.log(`[Cache Hit] Serving city data for '${cityName}' from Local Cache.`);
             return cacheData.graph_data;
         }
 
@@ -90,13 +85,9 @@ export async function fetchCityData(cityName) {
         const json = await response.json();
         const processedData = processOsmData(json, lat, lon, bbox);
 
-        // Save to cache asynchronously so we don't block the UI return
-        supabase.from('city_cache').upsert({
-            city_name: normalizedName,
-            graph_data: processedData,
-        }).then(({ error }) => {
-            if (error) console.error("Error writing to city cache:", error.message);
-        });
+        // Save to cache asynchronously 
+        localCache.set(normalizedName, { graph_data: processedData })
+            .catch(err => console.error("Error writing to local cache:", err));
 
         return processedData;
 

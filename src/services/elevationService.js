@@ -1,7 +1,7 @@
 // Elevation Service using Open-Meteo Elevation API
 // https://open-meteo.com/en/docs/elevation-api
 // Free, no API key, CORS-enabled — works directly from the browser
-import { supabase } from './supabaseClient';
+import { localCache } from './localCacheService';
 
 const ELEVATION_API = 'https://api.open-meteo.com/v1/elevation';
 const GRID_SIZE = 8; // 8×8 = 64 sample points
@@ -13,15 +13,10 @@ const GRID_SIZE = 8; // 8×8 = 64 sample points
 export async function fetchElevationGrid(cityName, bbox) {
     const normalizedName = cityName.toLowerCase().trim();
 
-    // 0. Check Supabase Cache first
-    const { data: cacheData } = await supabase
-        .from('city_cache')
-        .select('elevation_data')
-        .eq('city_name', normalizedName)
-        .single();
-
+    // 0. Check Local Cache first
+    const cacheData = await localCache.get(normalizedName);
     if (cacheData?.elevation_data) {
-        console.log(`[Cache Hit] Serving elevation data for '${cityName}' from Supabase.`);
+        console.log(`[Cache Hit] Serving elevation data for '${cityName}' from Local Cache.`);
         return cacheData.elevation_data;
     }
 
@@ -56,13 +51,8 @@ export async function fetchElevationGrid(cityName, bbox) {
     }));
 
     // Save to cache asynchronously 
-    // (Note: city_name row should already exist from fetchCityData)
-    supabase.from('city_cache')
-        .update({ elevation_data: elevationResult })
-        .eq('city_name', normalizedName)
-        .then(({ error }) => {
-            if (error) console.error("Error writing elevation to cache:", error.message);
-        });
+    localCache.set(normalizedName, { elevation_data: elevationResult })
+        .catch(err => console.error("Error writing elevation to local cache:", err));
 
     return elevationResult;
 }

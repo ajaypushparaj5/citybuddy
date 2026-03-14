@@ -1,0 +1,13 @@
+--- Checking API Keys and Endpoints ---
+❌ VITE_OSM_OVERPASS_API_URL: FAILED with status 504
+   Response: <?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE h...
+❌ VITE_SUPABASE_URL: FAILED with status 522
+   Response: <!DOCTYPE html>
+<!--[if lt IE 7]> <html class="no-...
+✅ VITE_WEATHER_API_KEY (OpenWeatherMap): WORKING (200)
+✅ VITE_TRAFFIC_API_KEY (TomTom Traffic): WORKING (200)
+❌ VITE_NEWS_API_KEY (NewsAPI.org): FAILED with status 401
+   Response: {"status":"error","code":"apiKeyInvalid","message"...
+✅ VITE_AI_LLM_API_KEY (Gemini): WORKING (200)
+--- Finished checking API Keys ---

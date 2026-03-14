@@ -2,7 +2,7 @@ import React, { useMemo, useEffect, useState, useCallback } from 'react';
 import { MapContainer, TileLayer, Polyline, CircleMarker, Popup, useMap, Rectangle, useMapEvents, Polygon, Marker } from 'react-leaflet';
 import L from 'leaflet';
 import { renderToString } from 'react-dom/server';
-import { Hospital, ShieldAlert, Flame, School } from 'lucide-react';
+import { Hospital, ShieldAlert, Flame, School, AlertTriangle, CloudRain, Car } from 'lucide-react';
 import 'leaflet/dist/leaflet.css';
 import { interpolateElevation, elevationToColor, elevationLabel } from '../services/elevationService';
 
@@ -28,6 +28,20 @@ function ClickHandler({ elevationSamples, onMapClick }) {
                 ? interpolateElevation(lat, lng, elevationSamples)
                 : null;
             onMapClick({ lat, lng, elevation: elev });
+        }
+    });
+    return null;
+}
+
+// ── Selection handler: draws a 500m x 500m square around click ────────────────
+function SelectionHandler({ onSelect }) {
+    useMapEvents({
+        contextmenu(e) { // Right click to select an area
+            const { lat, lng } = e.latlng;
+            // ~500m square in degrees (rough estimation)
+            const d = 0.0025; 
+            const bbox = [[lat - d, lng - d], [lat + d, lng + d]];
+            onSelect(bbox);
         }
     });
     return null;
@@ -177,8 +191,19 @@ const getPoiIcon = (type) => {
     return ICON_DEFAULT;
 };
 
+// Alert Icon Factory
+const ICON_ALERT = createSvgIcon(AlertTriangle, '#ffffff', '#ef4444');
+const ICON_ACCIDENT = createSvgIcon(Car, '#ffffff', '#dc2626');
+const ICON_FLOOD = createSvgIcon(CloudRain, '#ffffff', '#2563eb');
+
+const getAlertIcon = (type) => {
+    if (type === 'accident') return ICON_ACCIDENT;
+    if (type === 'flood') return ICON_FLOOD;
+    return ICON_ALERT;
+};
+
 // ── Main Map Engine ───────────────────────────────────────────────────────────
-const CityTwinEngine = ({ data, elevationSamples, showElevation, showBuildings }) => {
+const CityTwinEngine = ({ data, elevationSamples, showElevation, showBuildings, sensorData, activeAlerts = [], selectedArea, setSelectedArea }) => {
     const center = [data.center[1], data.center[0]];
     const bbox = data.bbox;
 
@@ -197,6 +222,11 @@ const CityTwinEngine = ({ data, elevationSamples, showElevation, showBuildings }
     const pois = useMemo(() => data.nodes.filter(n => n.type !== 'intersection'), [data.nodes]);
     const intersections = useMemo(() => data.nodes.filter(n => n.type === 'intersection').slice(0, 4000), [data.nodes]);
 
+    const congestedEdges = useMemo(() => {
+        if (!sensorData?.traffic) return new Map();
+        return new Map(sensorData.traffic.map(t => [t.edgeId, t.level]));
+    }, [sensorData]);
+
     const handleMapClick = useCallback((info) => setClickInfo(info), []);
 
     return (
@@ -211,6 +241,15 @@ const CityTwinEngine = ({ data, elevationSamples, showElevation, showBuildings }
             >
                 <BoundsManager center={center} bbox={bbox} />
                 <ClickHandler elevationSamples={elevationSamples} onMapClick={handleMapClick} />
+                <SelectionHandler onSelect={setSelectedArea} />
+
+                {/* Selected Area Highlight */}
+                {selectedArea && (
+                    <Rectangle 
+                        bounds={selectedArea} 
+                        pathOptions={{ color: 'var(--accent-blue)', weight: 2, fillOpacity: 0.1, dashArray: '5, 10' }}
+                    />
+                )}
 
                 {/* Carto Light (Zomato/Uber minimalist style without labels/clutter) */}
                 <TileLayer
@@ -242,15 +281,17 @@ const CityTwinEngine = ({ data, elevationSamples, showElevation, showBuildings }
                 {data.edges.map((edge, i) => {
                     const isMajor = majorTypes.has(edge.roadType);
                     const isMid = midTypes.has(edge.roadType);
+                    const congestion = congestedEdges.get(edge.id);
+                    
                     return (
                         <Polyline
                             key={i}
                             positions={[[edge.source.lat, edge.source.lon], [edge.target.lat, edge.target.lon]]}
                             pathOptions={{
-                                // Bright contrasting colors for roads
-                                color: isMajor ? '#ff5200' : isMid ? '#fde047' : '#94a3b8',
-                                weight: isMajor ? 5 : isMid ? 4 : 2,
-                                opacity: isMajor ? 1 : isMid ? 0.9 : 0.6,
+                                // Bright contrasting colors for roads, override if congested
+                                color: congestion === 'heavy' ? '#7f1d1d' : congestion === 'moderate' ? '#b91c1c' : isMajor ? '#ff5200' : isMid ? '#fde047' : '#94a3b8',
+                                weight: congestion ? (isMajor ? 7 : 6) : isMajor ? 5 : isMid ? 4 : 2,
+                                opacity: isMajor || congestion ? 1 : isMid ? 0.9 : 0.6,
                             }}
                         />
                     );
@@ -266,6 +307,25 @@ const CityTwinEngine = ({ data, elevationSamples, showElevation, showBuildings }
                         <Popup>
                             <strong style={{ textTransform: 'capitalize' }}>{node.type.replace('_', ' ')}</strong>
                             {node.tags?.name ? <><br />{node.tags.name}</> : ''}
+                        </Popup>
+                    </Marker>
+                ))}
+
+                {/* Agent Alerts Markers */}
+                {activeAlerts.map((alert) => (
+                    <Marker
+                        key={alert.id}
+                        position={[alert.lat, alert.lon]}
+                        icon={getAlertIcon(alert.type)}
+                    >
+                        <Popup>
+                            <div style={{ padding: '2px' }}>
+                                <div style={{ fontSize: '0.7rem', fontWeight: 800, color: alert.severity === 'high' ? '#ef4444' : '#3b82f6', textTransform: 'uppercase', marginBottom: '4px' }}>
+                                    ⚠️ {alert.type} Alert
+                                </div>
+                                <div style={{ fontSize: '0.85rem', fontWeight: 600 }}>{alert.message}</div>
+                                <div style={{ fontSize: '0.7rem', color: '#64748b', marginTop: '4px' }}>Detected by CityMonitorAgent</div>
+                            </div>
                         </Popup>
                     </Marker>
                 ))}

@@ -43,7 +43,7 @@ class DataIntegrationService {
 
     tick() {
         let currentSensors = this.generateSensors();
-        
+
         // Add manual citizen reports and clear queue
         if (this.manualSensorsQueue.length > 0) {
             currentSensors = [...currentSensors, ...this.manualSensorsQueue];
@@ -54,7 +54,8 @@ class DataIntegrationService {
             timestamp: Date.now(),
             weather: this.generateWeather(),
             traffic: this.generateTraffic(),
-            sensors: currentSensors
+            sensors: this.generateSensors(),
+            areaConfig: this.areaConfig,
         };
 
         this.subscribers.forEach(cb => cb(tickData));
@@ -63,7 +64,7 @@ class DataIntegrationService {
     generateWeather() {
         // Mock weather baseline
         let rainfall = Math.random() > 0.8 ? Math.random() * 10 : 0;
-        
+
         // Boost if within the high-rainfall area config
         if (this.areaConfig.params.rainfall > 0) {
             rainfall = Math.max(rainfall, this.areaConfig.params.rainfall * 100);
@@ -77,34 +78,35 @@ class DataIntegrationService {
     }
 
     generateTraffic() {
-        // Pick 5-10 random edges to apply "congestion" to
         const congested = [];
+        const trafficDensity = this.areaConfig.params.trafficDensity || 0;
+
+        // Nothing configured — return no congestion. Selecting a box alone should not show any traffic.
+        if (trafficDensity === 0) return congested;
+
         const baseCount = Math.floor(Math.random() * 5) + 3;
-        const count = baseCount + Math.floor(this.areaConfig.params.trafficDensity * 20);
-        
-        for(let i=0; i<count; i++) {
-            // Priority: half the extra traffic goes to the specific selected area if it exists
+        const count = baseCount + Math.floor(trafficDensity * 20);
+
+        // Only prefer local edges when an area bbox is also selected
+        let localEdges = [];
+        if (this.areaConfig.bbox) {
+            const [[boxS, boxW], [boxN, boxE]] = this.areaConfig.bbox;
+            localEdges = this.cityEdges.filter(edge =>
+                edge.source.lat >= boxS && edge.source.lat <= boxN &&
+                edge.source.lon >= boxW && edge.source.lon <= boxE
+            );
+        }
+
+        for (let i = 0; i < count; i++) {
             let edge;
-            if (this.areaConfig.bbox && Math.random() < 0.8) {
-                const [[s, w], [n, e]] = this.areaConfig.bbox;
-                const localEdges = this.cityEdges.filter(e => 
-                    e.source.lat >= s && e.source.lat <= n && 
-                    e.source.lon >= w && e.source.lon <= e
-                );
-                if (localEdges.length > 0) {
-                    edge = localEdges[Math.floor(Math.random() * localEdges.length)];
-                }
+            if (localEdges.length > 0 && Math.random() < 0.8) {
+                edge = localEdges[Math.floor(Math.random() * localEdges.length)];
             }
-            
             if (!edge) edge = this.cityEdges[Math.floor(Math.random() * this.cityEdges.length)];
-            
+
             if (edge) {
-                const level = Math.random() > (0.7 - this.areaConfig.params.trafficDensity * 0.5) ? 'heavy' : 'moderate';
-                congested.push({
-                    edgeId: edge.id,
-                    level: level,
-                    speed: 15 + Math.random() * 20
-                });
+                const level = Math.random() > (0.7 - trafficDensity * 0.5) ? 'heavy' : 'moderate';
+                congested.push({ edgeId: edge.id, level, speed: 15 + Math.random() * 20 });
             }
         }
         return congested;
@@ -130,7 +132,7 @@ class DataIntegrationService {
                 type: 'flood_sensor',
                 lat: south + Math.random() * (north - south),
                 lon: west + Math.random() * (east - west),
-                value: 0.5 + Math.random() * 2.5, // meters
+                value: 0.5 + Math.random() * 2.5,
                 alert: true
             });
         }
@@ -140,3 +142,4 @@ class DataIntegrationService {
 }
 
 export const dataIntegrationService = new DataIntegrationService();
+

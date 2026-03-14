@@ -12,7 +12,7 @@ const CapsuleNavbar = () => {
   return (
     <nav className="absolute top-8 left-1/2 -translate-x-1/2 w-[90%] max-w-[1200px] z-[100] flex justify-between items-center">
       <div className="rotate-180-hover flex items-center gap-2 cursor-pointer" onClick={() => navigate('/')}>
-        <div className="icon-to-rotate bg-brand-indigo p-2 rounded-xl">
+        <div className="icon-to-rotate bg-[#69808d] p-2 rounded-xl">
           <Boxes size={24} className="text-white" />
         </div>
         <span className="font-space text-xl font-bold text-white">citybuddy</span>
@@ -175,7 +175,7 @@ export default function Home() {
           className="absolute inset-0 z-1 flex items-center justify-center pointer-events-none select-none transition-transform duration-75 ease-out"
           style={{ transform: `translateY(${scrollY * 0.4}px)` }}
         >
-          <h2 className="text-[15rem] lg:text-[15rem] font-bold text-white/[0.3] tracking-tighter uppercase whitespace-nowrap font-inter">
+          <h2 className="text-[15rem] lg:text-[16rem] font-bold text-white/[0.3] tracking-tighter uppercase whitespace-nowrap font-inter">
             smartcity
           </h2>
         </div>
@@ -183,22 +183,22 @@ export default function Home() {
         <div className="grid-overlay absolute inset-0 z-2 opacity-30" />
         <CapsuleNavbar />
         
-        <div className="relative z-10 h-full flex flex-col items-center justify-center text-center px-5">
+        <div className="relative z-10 h-full flex flex-col items-center justify-start pt-32 lg:pt-48 text-center px-5">
           {/* Announcement Pill */}
-          <div className="mb-10 animate-fade-in-up">
+          {/* <div className="mb-10 animate-fade-in-up">
             <div className="glass-soft px-4 py-1.5 rounded-full inline-flex items-center gap-2 text-[0.8rem] font-medium text-white/80 border border-white/5 cursor-pointer hover:bg-white/10 transition-colors">
               <span className="bg-brand-indigo text-white text-[10px] font-bold px-1.5 py-0.5 rounded-sm uppercase tracking-tighter">New</span>
               <span>Superdesign Mobile for iPhone is here</span>
               <ArrowRight size={14} className="text-white/40" />
             </div>
-          </div>
+          </div> */}
 
-          <h1 className="text-5xl lg:text-6xl font-lora text-white tracking-tight leading-tight">
+          <h1 className="text-5xl lg:text-7xl font-lora text-white tracking-tight leading-tight">
             Vibe Check Your Design
           </h1>
 
-          <p className="text-lg md:text-xl lg:text-2xl text-white font-light mt-8 max-w-[700px] leading-relaxed">
-            Generate aesthetic production-ready <span className="text-white border-b border-indigo-500/50 pb-0.5">digital experiences</span> from your mood boards
+          <p className="text-base md:text-lg text-white/95 font-extralight mt-4 max-w-[600px] leading-relaxed">
+            Generate aesthetic production-ready <span className="text-white/80 border-b border-white/20 pb-0.5">digital experiences</span> from your mood boards
           </p>
 
           {/* <VibeInput /> */}

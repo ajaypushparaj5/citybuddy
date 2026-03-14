@@ -3,21 +3,35 @@ import { BaseAgent } from './BaseAgent';
 export class EmergencyAgent extends BaseAgent {
     constructor() {
         super('EmergencyAgent', 'Calculates emergency response routes and hospital accessibility.', 'emergency');
-        // This agent listens for alerts from other agents primarily
         this.activeIncidents = new Map();
+        // Track when we last handled each incident TYPE to avoid re-running the LLM endlessly
+        // for the same ongoing crisis (e.g. flood warning repeating every 30s).
+        this.incidentCooldowns = new Map();
+        this.COOLDOWN_MS = 5 * 60 * 1000; // 5 minutes per incident type
     }
 
     // This agent might be called directly by the Manager when another agent emits an alert
     handleIncident(alert) {
-        if (alert.type === 'accident' || alert.type === 'flood') {
+        if (alert.type === 'accident' || alert.type === 'flood' || alert.type === 'flood_warning') {
+            // Key by type + approximate location (1 decimal place ≈ 11km grid) so that
+            // selecting a DIFFERENT area always triggers a fresh response, but the same
+            // area doesn't spam the LLM every 30s.
+            const locKey = `${alert.type}_${(alert.lat || 0).toFixed(1)}_${(alert.lon || 0).toFixed(1)}`;
+            const lastHandled = this.incidentCooldowns.get(locKey) || 0;
+            if (Date.now() - lastHandled < this.COOLDOWN_MS) {
+                console.log(`[EmergencyAgent] '${locKey}' already handled recently. Skipping duplicate.`);
+                return;
+            }
+            this.incidentCooldowns.set(locKey, Date.now());
             console.log(`[EmergencyAgent] Analyzing response for incident: ${alert.message}`);
             this.calculateResponse(alert);
         }
     }
 
+
     async calculateResponse(alert) {
         // Collect all potential emergency response/shelter points
-        const pois = this.cityData.nodes.filter(n => 
+        const pois = this.cityData.nodes.filter(n =>
             n.type === 'hospital' || n.type === 'emergency' || n.type === 'school'
         );
 
@@ -38,32 +52,41 @@ export class EmergencyAgent extends BaseAgent {
         }));
 
         const systemPrompt = `
-            You are the EmergencyAgent.
-            An incident occurred. Choose the most appropriate infrastructure to respond from or use as a shelter.
-            - Accident: Dispatch from nearest hospital or emergency station.
-            - Flood: Use nearest school as shelter or nearest emergency station for rescue.
-            Return ONLY JSON: { "best_location_index": number, "response_type": "dispatch_ambulance"|"dispatch_fire"|"establish_shelter"|"police_response" }
+            You are the EmergencyAgent for a smart city crisis response system.
+            An incident has occurred at coordinates [${alert.lat?.toFixed(5)}, ${alert.lon?.toFixed(5)}].
+            Type: ${alert.type} | Severity: ${alert.severity}
+
+            Based on the available infrastructure options below, decide the best response.
+            - For a flood/flood_warning: prioritise shelter establishment at a school, or dispatch rescue from nearest emergency station.
+            - For an accident: dispatch ambulance from nearest hospital.
+            - For any type: also recommend any police coordination if needed.
+
+            Return ONLY this JSON:
+            {
+              "best_location_index": <number 0-${closestPois.length - 1}>,
+              "response_type": "dispatch_ambulance" | "dispatch_fire" | "establish_shelter" | "police_response",
+              "action_instructions": "<A single clear sentence: what unit goes from where to where and what to do>"
+            }
         `;
 
         const userPrompt = JSON.stringify({
-            incident: { type: alert.type, severity: alert.severity, message: alert.message },
-            closest_options: closestPois.map((p, i) => `[${i}] ${p.name} (${p.type})`)
+            incident: { type: alert.type, severity: alert.severity, message: alert.message, lat: alert.lat, lon: alert.lon },
+            available_infrastructure: closestPois.map((p, i) => `[${i}] ${p.name} (${p.type}) at [${p.lat?.toFixed(4)}, ${p.lon?.toFixed(4)}]`)
         });
 
         const decision = await this.promptAI(systemPrompt, userPrompt);
-        
+
         if (decision && typeof decision.best_location_index === 'number') {
             const bestPoi = closestPois[decision.best_location_index] || closestPois[0];
-            
-            let actionText = "Emergency units dispatched";
-            if (decision.response_type === "establish_shelter") actionText = "Emergency shelter established";
-            else if (decision.response_type === "dispatch_fire") actionText = "Fire rescue dispatched";
-            else if (decision.response_type === "police_response") actionText = "Police dispatched";
+
+            // Use the LLM-generated instruction if available, or fall back to a brief summary
+            const instructions = decision.action_instructions ||
+                `${decision.response_type?.replace(/_/g, ' ')} from ${bestPoi.name} to the incident site.`;
 
             this.emitAlert({
                 type: 'emergency_dispatch',
                 severity: 'high',
-                message: `${actionText} from ${bestPoi.name} for: ${alert.type}.`,
+                message: instructions,
                 lat: bestPoi.lat,
                 lon: bestPoi.lon,
                 targetLat: alert.lat,

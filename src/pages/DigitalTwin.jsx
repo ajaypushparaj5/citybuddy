@@ -94,6 +94,7 @@ function DigitalTwin() {
         areaParams={areaParams}
         setAreaParams={setAreaParams}
         agentStates={agentStates}
+        elevationSamples={elevationSamples}
       />
 
       <div className="map-container" style={{ flex: 1, position: 'relative', height: '100%' }}>

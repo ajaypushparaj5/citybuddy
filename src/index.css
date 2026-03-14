@@ -6,13 +6,13 @@
   --bg-surface: #ffffff;
   --text-primary: #0f172a;
   --text-secondary: #475569;
-  
+
   /* Accent Colors (No gradients, solid crisp colors) */
   --accent-blue: #2563eb;
   --accent-teal: #0d9488;
   --accent-red: #dc2626;
   --accent-orange: #ea580c;
-  
+
   /* Borders & Shadows */
   --border-subtle: #e2e8f0;
   --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
@@ -37,7 +37,7 @@ body {
 /* Base UI Components */
 .app-container {
   display: flex;
-  height: 100vh;
+  height: 100%;
   width: 100vw;
   overflow: hidden;
 }
@@ -132,7 +132,10 @@ body {
 .map-container {
   flex: 1;
   position: relative;
-  background-color: #e5e7eb; /* Fallback map background */
+  background-color: #e5e7eb;
+  /* Fallback map background */
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 /* Custom DeckGL Tooltip Styling */

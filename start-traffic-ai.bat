@@ -1,0 +1,13 @@
+@echo off
+echo Starting AI Traffic Engine...
+
+echo 1. Starting local Node.js traffic controller...
+start cmd /k "cd backend && npm start"
+
+echo 2. Starting local Python AI Worker (Dummy Mode by default)...
+start cmd /k "cd python-worker && python worker.py"
+
+echo 3. Starting React Frontend...
+start cmd /k "npm run dev"
+
+echo All services are starting up! Your browser should open shortly to the React app.

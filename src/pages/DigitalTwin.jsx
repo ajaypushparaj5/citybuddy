@@ -1,0 +1,133 @@
+import React, { useState } from 'react';
+import CityTwinEngine from '../components/CityTwinEngine';
+import Sidebar from '../components/Sidebar';
+import { fetchCityData } from '../services/osmService';
+import { fetchElevationGrid } from '../services/elevationService';
+import { dataIntegrationService } from '../services/dataIntegrationService';
+import { CityMonitorAgent } from '../agents/CityMonitorAgent';
+
+function DigitalTwin() {
+  const [cityData, setCityData] = useState(null);
+  const [elevationSamples, setElevation] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [showElevation, setShowElevation] = useState(false);
+  const [showBuildings, setShowBuildings] = useState(false);
+  const [activeAlerts, setActiveAlerts] = useState([]);
+  const [sensorData, setSensorData] = useState(null);
+  const [selectedArea, setSelectedArea] = useState(null);
+  const [areaParams, setAreaParams] = useState({ rainfall: 0, trafficDensity: 0 });
+
+  // Initialize Agent
+  const [agent] = useState(() => new CityMonitorAgent());
+
+  const handleCitySubmit = async (cityName) => {
+    setIsLoading(true);
+    setError(null);
+    setElevation(null);
+    try {
+      // 1. Fetch city graph (roads, nodes, infrastructure)
+      const data = await fetchCityData(cityName);
+      setCityData(data);
+
+      // 2. Fetch elevation grid in the background (non-blocking UX)
+      fetchElevationGrid(cityName, data.bbox)
+        .then(samples => setElevation(samples))
+        .catch(err => console.warn('Elevation fetch failed (non-critical):', err.message));
+
+    } catch (err) {
+      console.error(err);
+      setError(err.message || 'Failed to generate city twin.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Start data stream when city data is loaded
+  React.useEffect(() => {
+    if (cityData) {
+      // Initialize agent with data and alert handler
+      agent.init(cityData, (alert) => {
+        setActiveAlerts(prev => [alert, ...prev].slice(0, 50));
+      });
+
+      // Start data service
+      dataIntegrationService.start(cityData.bbox, cityData.edges);
+
+      // Subscribe to updates
+      const unsubscribe = dataIntegrationService.subscribe((tick) => {
+        setSensorData(tick);
+        agent.processTick(tick);
+      });
+
+      return () => {
+        unsubscribe();
+        dataIntegrationService.stop();
+      };
+    }
+  }, [cityData, agent]);
+
+  // Sync area parameters to data service
+  React.useEffect(() => {
+    if (cityData) {
+      dataIntegrationService.updateAreaConfig({
+        bbox: selectedArea,
+        params: areaParams
+      });
+    }
+  }, [selectedArea, areaParams, cityData]);
+
+  return (
+    <div className="twin-page-container" style={{ display: 'flex', height: '100vh', width: '100vw', overflow: 'hidden' }}>
+      <Sidebar
+        onSubmit={handleCitySubmit}
+        isLoading={isLoading}
+        error={error}
+        cityData={cityData}
+        showElevation={showElevation}
+        setShowElevation={setShowElevation}
+        showBuildings={showBuildings}
+        setShowBuildings={setShowBuildings}
+        activeAlerts={activeAlerts}
+        sensorData={sensorData}
+        selectedArea={selectedArea}
+        areaParams={areaParams}
+        setAreaParams={setAreaParams}
+      />
+
+      <div className="map-container" style={{ flex: 1, position: 'relative', height: '100%' }}>
+        {isLoading && (
+          <div style={{
+            position: 'absolute', inset: 0, display: 'flex',
+            alignItems: 'center', justifyContent: 'center',
+            backgroundColor: 'rgba(248, 250, 252, 0.8)', zIndex: 50
+          }}>
+            <div style={{ color: 'var(--accent-blue)', fontWeight: 600 }}>Extracting Infrastructure...</div>
+          </div>
+        )}
+
+        {cityData ? (
+          <CityTwinEngine
+            data={cityData}
+            elevationSamples={elevationSamples}
+            showElevation={showElevation}
+            showBuildings={showBuildings}
+            sensorData={sensorData}
+            activeAlerts={activeAlerts}
+            selectedArea={selectedArea}
+            setSelectedArea={setSelectedArea}
+          />
+        ) : (
+          <div style={{
+            height: '100%', display: 'flex', alignItems: 'center',
+            justifyContent: 'center', color: 'var(--text-secondary)'
+          }}>
+            <p>Select a region to generate a Digital Twin.</p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+export default DigitalTwin;

@@ -9,11 +9,13 @@ class DataIntegrationService {
         this.cityBbox = null;
         this.cityEdges = [];
         this.areaConfig = { bbox: null, params: { rainfall: 0, trafficDensity: 0 } };
+        this.manualSensorsQueue = [];
     }
 
     start(bbox, edges) {
         this.cityBbox = bbox;
         this.cityEdges = edges;
+        this.manualSensorsQueue = [];
         this.stop();
         this.interval = setInterval(() => this.tick(), this.tickRate);
         console.log("[DataIntegrationService] Started data streaming ticks.");
@@ -21,6 +23,12 @@ class DataIntegrationService {
 
     updateAreaConfig(config) {
         this.areaConfig = config;
+    }
+
+    injectAnomaly(sensor) {
+        this.manualSensorsQueue.push(sensor);
+        // Force an immediate tick for responsiveness
+        this.tick();
     }
 
     stop() {
@@ -34,11 +42,19 @@ class DataIntegrationService {
     }
 
     tick() {
+        let currentSensors = this.generateSensors();
+        
+        // Add manual citizen reports and clear queue
+        if (this.manualSensorsQueue.length > 0) {
+            currentSensors = [...currentSensors, ...this.manualSensorsQueue];
+            this.manualSensorsQueue = [];
+        }
+
         const tickData = {
             timestamp: Date.now(),
             weather: this.generateWeather(),
             traffic: this.generateTraffic(),
-            sensors: this.generateSensors()
+            sensors: currentSensors
         };
 
         this.subscribers.forEach(cb => cb(tickData));

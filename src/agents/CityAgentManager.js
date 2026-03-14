@@ -7,6 +7,19 @@ export class CityAgentManager {
     constructor() {
         this.agents = new Map();
         this.onAlertCallback = null;
+        this.subscribers = new Set();
+        this.globalAlerts = [];
+    }
+
+    // Subscribe to global alerts (Useful for external React components like CitizenDashboard)
+    subscribe(callback) {
+        this.subscribers.add(callback);
+        // Fire it immediately with current alerts state to populate UI
+        callback(this.globalAlerts);
+        
+        return () => {
+            this.subscribers.delete(callback);
+        };
     }
 
     addAgent(agent) {
@@ -23,8 +36,16 @@ export class CityAgentManager {
                 if (emergencyAgent && agent.name !== 'EmergencyAgent') {
                     emergencyAgent.handleIncident(alert);
                 }
-                
-                this.onAlertCallback(alert);
+                // Update full local alert state
+                this.globalAlerts = [alert, ...this.globalAlerts].slice(0, 50);
+
+                // Notify UI directly if configured
+                if (this.onAlertCallback) {
+                    this.onAlertCallback(alert);
+                }
+
+                // Notify all external React subscribers
+                this.subscribers.forEach(callback => callback(this.globalAlerts));
             });
         });
     }

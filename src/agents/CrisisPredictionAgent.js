@@ -1,3 +1,4 @@
+
 import { BaseAgent } from './BaseAgent';
 
 export class CrisisPredictionAgent extends BaseAgent {
@@ -15,7 +16,7 @@ export class CrisisPredictionAgent extends BaseAgent {
 
         // If rainfall is high and we are in a low elevation area
         if (weather.rainfall > 0.6) {
-             const systemPrompt = `
+            const systemPrompt = `
                 You are the CrisisPredictionAgent. 
                 Analyze the rainfall intensity and current sensors. 
                 Predict if a specific zone is at risk of flash flooding.

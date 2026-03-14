@@ -26,25 +26,45 @@ function Home() {
             The next-generation Digital Twin platform for real-time city monitoring, 
             infrastructure analysis, and intelligent urban planning.
           </p>
-          <button 
-            onClick={() => navigate('/twin')}
-            style={{
-              padding: '16px 32px',
-              fontSize: '1.1rem',
-              fontWeight: 600,
-              backgroundColor: '#3b82f6',
-              color: 'white',
-              border: 'none',
-              borderRadius: '12px',
-              cursor: 'pointer',
-              transition: 'transform 0.2s, background-color 0.2s',
-              boxShadow: '0 4px 20px rgba(59, 130, 246, 0.4)'
-            }}
-            onMouseOver={(e) => e.target.style.transform = 'scale(1.05)'}
-            onMouseOut={(e) => e.target.style.transform = 'scale(1)'}
-          >
-            Launch Digital Twin
-          </button>
+          <div style={{ display: 'flex', gap: '16px', justifyContent: 'center' }}>
+            <button 
+              onClick={() => navigate('/twin')}
+              style={{
+                padding: '16px 32px',
+                fontSize: '1.1rem',
+                fontWeight: 600,
+                backgroundColor: '#3b82f6',
+                color: 'white',
+                border: 'none',
+                borderRadius: '12px',
+                cursor: 'pointer',
+                transition: 'transform 0.2s, background-color 0.2s',
+                boxShadow: '0 4px 20px rgba(59, 130, 246, 0.4)'
+              }}
+              onMouseOver={(e) => e.target.style.transform = 'scale(1.05)'}
+              onMouseOut={(e) => e.target.style.transform = 'scale(1)'}
+            >
+              Launch Digital Twin
+            </button>
+            <button 
+              onClick={() => navigate('/citizen')}
+              style={{
+                padding: '16px 32px',
+                fontSize: '1.1rem',
+                fontWeight: 600,
+                backgroundColor: 'transparent',
+                color: 'white',
+                border: '2px solid #3b82f6',
+                borderRadius: '12px',
+                cursor: 'pointer',
+                transition: 'transform 0.2s, background-color 0.2s',
+              }}
+              onMouseOver={(e) => { e.target.style.transform = 'scale(1.05)'; e.target.style.backgroundColor = 'rgba(59, 130, 246, 0.1)'; }}
+              onMouseOut={(e) => { e.target.style.transform = 'scale(1)'; e.target.style.backgroundColor = 'transparent'; }}
+            >
+              Citizen Dashboard
+            </button>
+          </div>
         </div>
       </section>
 

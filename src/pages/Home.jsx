@@ -194,13 +194,21 @@ export default function Home() {
           </div> */}
 
           <h1 className="text-5xl lg:text-7xl font-lora text-white tracking-tight leading-tight">
-            Vibe Check Your Design
+             Your City, Perfectly Echoed
           </h1>
 
           <p className="text-base md:text-lg text-white/95 font-extralight mt-4 max-w-[600px] leading-relaxed">
-            Generate aesthetic production-ready <span className="text-white/80 border-b border-white/20 pb-0.5">digital experiences</span> from your mood boards
+            Build high-fidelity digital twins and <span className="text-white/80 border-b border-white/20 pb-0.5">monitor autonomous dynamics</span> in real-time.
           </p>
 
+          <div className="mt-40 flex flex-wrap justify-center gap-4">
+            <button className="px-8 py-4 bg-white text-slate-900 font-bold rounded-full hover:scale-105 transition-transform cursor-pointer">
+              Launch Engine
+            </button>
+            <button className="px-8 py-4 bg-white/10 text-white font-bold rounded-full backdrop-blur-md border border-white/10 hover:bg-white/20 transition-all cursor-pointer">
+              Watch Demo
+            </button>
+          </div>
           {/* <VibeInput /> */}
           
           <div className="mt-20 flex flex-col items-center gap-6">

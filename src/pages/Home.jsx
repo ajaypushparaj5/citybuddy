@@ -193,7 +193,7 @@ export default function Home() {
             </div>
           </div> */}
 
-          <h1 className="text-5xl lg:text-7xl font-lora text-white tracking-tight leading-tight">
+          <h1 className="text-5xl lg:text-8xl font-cormorant text-white tracking-tight leading-tight">
              Your City, Perfectly Echoed
           </h1>
 
@@ -202,10 +202,10 @@ export default function Home() {
           </p>
 
           <div className="mt-40 flex flex-wrap justify-center gap-4">
-            <button className="px-8 py-4 bg-white text-slate-900 font-bold rounded-full hover:scale-105 transition-transform cursor-pointer">
+            <button className="px-8 py-4 bg-white text-slate-900 font-extralight rounded-full hover:scale-105 transition-transform cursor-pointer">
               Launch Engine
             </button>
-            <button className="px-8 py-4 bg-white/10 text-white font-bold rounded-full backdrop-blur-md border border-white/10 hover:bg-white/20 transition-all cursor-pointer">
+            <button className="px-8 py-4 bg-white/10 text-white font-extralight rounded-full backdrop-blur-md border border-white/10 hover:bg-white/20 transition-all cursor-pointer">
               Watch Demo
             </button>
           </div>

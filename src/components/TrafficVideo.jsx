@@ -84,6 +84,8 @@ const TrafficVideo = ({ onStatsUpdate }) => {
 
         const video = videoRef.current;
         const canvas = canvasRef.current;
+
+        if (!canvas) return; // Wait until rendered
         const ctx = canvas.getContext('2d');
 
         // Make canvas match video dimensions
@@ -94,36 +96,94 @@ const TrafficVideo = ({ onStatsUpdate }) => {
 
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        // Sync boxes based on current time
+        // Sync boxes based on current time - ALWAYS find closest to prevent disappearance on pause!
         const currentTime = video.currentTime;
-        // Find the closest frame data
-        const currentFrame = resultsData.find(f => Math.abs(f.timestamp - currentTime) < 0.1);
+        let currentFrame = resultsData[0];
+        let minDiff = Infinity;
+        for (let i = 0; i < resultsData.length; i++) {
+            const diff = Math.abs(resultsData[i].timestamp - currentTime);
+            if (diff < minDiff) {
+                minDiff = diff;
+                currentFrame = resultsData[i];
+            }
+        }
 
         if (currentFrame && currentFrame.boxes) {
             // Scale coordinates from original video to current display size
             const scaleX = canvas.width / video.videoWidth;
             const scaleY = canvas.height / video.videoHeight;
 
+            // Draw Live Object Boxes
             currentFrame.boxes.forEach(box => {
-                ctx.strokeStyle = 'red';
-                ctx.lineWidth = 3;
-                ctx.strokeRect(box.x * scaleX, box.y * scaleY, box.w * scaleX, box.h * scaleY);
+                const x = box.x * scaleX;
+                const y = box.y * scaleY;
+                const w = box.w * scaleX;
+                const h = box.h * scaleY;
 
-                ctx.fillStyle = 'red';
-                ctx.font = '16px Arial';
-                ctx.fillText(`Vehicle (${Math.round(box.confidence * 100)}%)`, box.x * scaleX, (box.y * scaleY) - 5);
+                // 1. Transparent Red Fill inside the boundary
+                ctx.fillStyle = 'rgba(239, 68, 68, 0.15)';
+                ctx.fillRect(x, y, w, h);
+
+                // 2. Solid Border
+                ctx.strokeStyle = '#ef4444';
+                ctx.lineWidth = 2;
+                ctx.strokeRect(x, y, w, h);
+
+                // 3. Polished Label (Background box + crisp text)
+                const label = `VEHICLE ${Math.round(box.confidence * 100)}%`;
+                ctx.font = '600 11px Inter, system-ui, sans-serif';
+                const textWidth = ctx.measureText(label).width;
+
+                ctx.fillStyle = '#ef4444';
+                ctx.fillRect(x, y - 18, textWidth + 8, 18);
+
+                ctx.fillStyle = '#ffffff';
+                ctx.fillText(label, x + 4, y - 5);
             });
 
             if (onStatsUpdate) {
                 const count = currentFrame.boxes.length;
                 if (lastCountRef.current !== count) {
                     lastCountRef.current = count;
-                    let congestionLevel = 'Low';
-                    if (count >= 8) congestionLevel = 'High';
-                    else if (count >= 4) congestionLevel = 'Moderate';
+                    let congestionLevel = 'LOW';
+                    let incidentPayload = null;
+                    let recommendationPayload = null;
+
+                    if (count > 7) { // HIGH
+                        congestionLevel = 'HIGH';
+                        incidentPayload = {
+                            incident_type: "TRAFFIC_CONGESTION",
+                            location: "Junction A",
+                            severity: "HIGH",
+                            timestamp: new Date().toLocaleTimeString()
+                        };
+                        recommendationPayload = {
+                            alert: "Heavy congestion detected",
+                            recommended_action: "Redirect emergency vehicles",
+                            priority: "HIGH"
+                        };
+                    } else if (count > 3) { // MODERATE
+                        congestionLevel = 'MODERATE';
+                        incidentPayload = {
+                            incident_type: "TRAFFIC_BUILDUP",
+                            location: "Junction A",
+                            severity: "MODERATE",
+                            timestamp: new Date().toLocaleTimeString()
+                        };
+                        recommendationPayload = {
+                            alert: "Traffic volume increasing",
+                            recommended_action: "Monitor intersection flow",
+                            priority: "MEDIUM"
+                        };
+                    }
 
                     // Dispatch updates back to the parent React Component (Sidebar)
-                    onStatsUpdate({ vehicleCount: count, congestionLevel });
+                    onStatsUpdate({
+                        vehicleCount: count,
+                        congestionLevel,
+                        incidentPayload,
+                        recommendationPayload
+                    });
                 }
             }
         }
@@ -137,7 +197,7 @@ const TrafficVideo = ({ onStatsUpdate }) => {
     });
 
     return (
-        <div style={{ padding: '20px', width: '100%', height: '100%', display: 'flex', flexDirection: 'column' }}>
+        <div style={{ padding: '20px', width: '100%', display: 'flex', flexDirection: 'column' }}>
             <h2>AI Traffic Video Tracking</h2>
             <p style={{ marginBottom: '20px' }}>Upload a video to asynchronously track vehicles with YOLOv8.</p>
 
@@ -159,7 +219,7 @@ const TrafficVideo = ({ onStatsUpdate }) => {
             </div>
 
             {status === 'completed' && videoUrl && (
-                <div style={{ position: 'relative', width: '100%', maxWidth: '800px', backgroundColor: 'black' }}>
+                <div style={{ position: 'relative', width: '100%', maxWidth: '800px', backgroundColor: 'black', borderRadius: '8px', overflow: 'hidden', border: '1px solid var(--border-subtle)' }}>
                     <video
                         ref={videoRef}
                         src={videoUrl}

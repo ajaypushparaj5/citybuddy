@@ -68,7 +68,7 @@ export async function fetchCityData(cityName) {
         }
 
         const json = await response.json();
-        return processOsmData(json, lat, lon);
+        return processOsmData(json, lat, lon, bbox);
 
     } catch (error) {
         console.error("OSM Error:", error);
@@ -76,7 +76,7 @@ export async function fetchCityData(cityName) {
     }
 }
 
-function processOsmData(rawOsmData, centerLat, centerLon) {
+function processOsmData(rawOsmData, centerLat, centerLon, bbox) {
     const nodesMap = new Map();
     const rawNodes = [];
     const poiNodes = [];   // ← collect POIs separately so they're never lost
@@ -157,6 +157,8 @@ function processOsmData(rawOsmData, centerLat, centerLon) {
 
     return {
         center: [centerLon, centerLat],
+        // leafletBounds format: [[south, west], [north, east]]
+        bbox: [[bbox[0], bbox[1]], [bbox[2], bbox[3]]],
         nodes: uniqueNodes,
         edges: edges,
         infrastructure: infrastructureStats,

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   Map, Send, Paperclip, 
-  ArrowRight, Globe, Shield, Boxes, ChevronDown
+  ArrowRight, Globe, Shield, Boxes, ChevronDown, ArrowUp
 } from 'lucide-react';
 
 // --- Sub-components ---
@@ -10,7 +10,7 @@ import {
 const CapsuleNavbar = () => {
   const navigate = useNavigate();
   return (
-    <nav className="absolute top-8 left-1/2 -translate-x-1/2 w-[90%] max-w-[1200px] z-100 flex justify-between items-center">
+    <nav className="absolute top-8 left-1/2 -translate-x-1/2 w-[90%] max-w-[1200px] z-[100] flex justify-between items-center">
       <div className="rotate-180-hover flex items-center gap-2 cursor-pointer" onClick={() => navigate('/')}>
         <div className="icon-to-rotate bg-brand-indigo p-2 rounded-xl">
           <Boxes size={24} className="text-white" />
@@ -41,25 +41,28 @@ const VibeInput = () => {
   return (
     <div className="relative w-full max-w-[720px] mt-10 mx-auto">
       {/* Background Glow */}
-      <div className={`absolute -inset-1 bg-linear-to-r from-indigo-500 via-purple-500 to-pink-500 rounded-3xl blur-lg transition-opacity duration-300 ${isFocused ? 'opacity-60' : 'opacity-30'}`} />
+      <div className={`absolute -inset-1 bg-linear-to-r from-indigo-500 via-purple-500 to-pink-500 rounded-3xl blur-lg transition-opacity duration-300 ${isFocused ? 'opacity-40' : 'opacity-20'}`} />
       
       {/* Container */}
-      <div className="relative bg-white rounded-[22px] p-4 flex flex-col gap-3 shadow-xl">
+      <div className="relative bg-white rounded-3xl p-5 flex flex-col gap-4 shadow-2xl">
         <textarea 
-          placeholder="Describe the urban simulation you want to run..."
+          placeholder="Describe the vibe you want... e.g., a dark, minimalist aesthetic with glassmorphism"
           value={text}
           onChange={(e) => setText(e.target.value)}
           onFocus={() => setIsFocused(true)}
           onBlur={() => setIsFocused(false)}
-          className="w-full min-h-[80px] border-none outline-hidden text-lg text-primary-dark resize-none font-inherit"
+          className="w-full min-h-[100px] border-none outline-hidden text-lg text-[#94a3b8] placeholder:text-slate-300 resize-none font-inter"
         />
-        <div className="flex justify-between items-center">
-          <div className="flex gap-3 text-text-slate">
-            <Paperclip size={20} className="cursor-pointer hover:text-primary-dark transition-colors" />
-            <Globe size={20} className="cursor-pointer hover:text-primary-dark transition-colors" />
+        <div className="flex justify-between items-center pt-2 border-t border-slate-50">
+          <div className="flex items-center gap-4">
+            <Paperclip size={20} className="text-slate-300 cursor-pointer hover:text-slate-400" />
+            <div className="flex items-center gap-2 bg-slate-50 px-3 py-1.5 rounded-lg cursor-pointer hover:bg-slate-100 transition-colors">
+              <div className="w-4 h-4 bg-[#A259FF] rounded-sm flex items-center justify-center text-[10px] text-white font-bold">F</div>
+              <span className="text-sm font-medium text-slate-400">Import</span>
+            </div>
           </div>
-          <button className="bg-primary-dark text-white w-10 h-10 rounded-xl flex items-center justify-center cursor-pointer hover:bg-secondary-dark transition-colors">
-            <Send size={18} />
+          <button className="bg-slate-100 text-slate-400 w-10 h-10 rounded-xl flex items-center justify-center cursor-pointer hover:bg-slate-200 transition-colors">
+            <ArrowUp size={20} />
           </button>
         </div>
       </div>
@@ -130,6 +133,7 @@ const AccordionItem = ({ question, answer }) => {
 
 export default function Home() {
   const [typedText, setTypedText] = useState('');
+  const [scrollY, setScrollY] = useState(0);
   const fullSubheading = 'The precision operating system for modern urban environments.';
 
   useEffect(() => {
@@ -142,29 +146,72 @@ export default function Home() {
     return () => clearInterval(interval);
   }, []);
 
+  useEffect(() => {
+    const handleScroll = () => setScrollY(window.scrollY);
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
   return (
     <div className="min-h-screen">
       {/* 1. Hero Section (110vh) */}
-      <section className="hero-gradient h-[110vh] relative overflow-hidden">
-        <div className="grid-overlay absolute inset-0" />
+      <section className="h-[110vh] relative overflow-hidden bg-[#0a0a0f]">
+        {/* Background Images Layer */}
+        <div className="absolute inset-0 z-0">
+          <div className="h-1/2 w-full bg-[#111a24]">
+            {/* Color replaces the red.jpg image */}
+          </div>
+          <div className="absolute bottom-0 h-1/2 w-full">
+            <img src="/sc.jpg" className="w-full h-full object-cover" alt="" />
+            {/* Black overlay on second image */}
+            <div className="absolute inset-0 bg-black/40" />
+          </div>
+          {/* Dark Overlay to blend */}
+          <div className="absolute inset-0 bg-linear-to-b from-[#0a0a0f] via-transparent to-transparent opacity-80" />
+        </div>
+
+        {/* Parallax Text Layer */}
+        <div 
+          className="absolute inset-0 z-1 flex items-center justify-center pointer-events-none select-none transition-transform duration-75 ease-out"
+          style={{ transform: `translateY(${scrollY * 0.4}px)` }}
+        >
+          <h2 className="text-[15rem] lg:text-[15rem] font-bold text-white/[0.5] tracking-tighter uppercase whitespace-nowrap font-inter">
+            smartcity
+          </h2>
+        </div>
+
+        <div className="grid-overlay absolute inset-0 z-2 opacity-30" />
         <CapsuleNavbar />
         
         <div className="relative z-10 h-full flex flex-col items-center justify-center text-center px-5">
-          <div className="bg-indigo-500/10 text-brand-indigo px-3 py-1.5 rounded-lg text-[0.8rem] font-bold mb-6 flex items-center gap-1.5">
-            <span className="text-white bg-brand-indigo text-[0.6rem] px-1 py-0.5 rounded uppercase">NEW</span>
-            Infrastructure v2.0 is now live
+          <div className="bg-white/10 backdrop-blur-md text-white/80 px-4 py-2 rounded-full text-[0.85rem] font-medium mb-8 border border-white/20 flex items-center gap-2 group cursor-pointer hover:bg-white/20 transition-all">
+            <span className="text-white bg-brand-indigo text-[0.6rem] px-1.5 py-0.5 rounded font-black">NEW</span>
+            Superdesign Mobile for iPhone is here <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
           </div>
 
-          <h1 className="font-lora text-6xl lg:text-[4.5rem] leading-[1.1] tracking-tight text-white max-w-[900px]">
-            Transforming Urban Data into <span className="text-brand-indigo">Actionable Reality.</span>
+          <h1 className="font-lora text-6xl lg:text-[5.5rem] leading-[1.05] tracking-tight text-white max-w-[1000px]">
+            Vibe Check Your Design
           </h1>
 
-          <p className="typing-cursor text-xl lg:text-2xl text-white/60 mt-6 max-w-[600px] leading-relaxed min-h-[2.8rem]">
-            {typedText}
+          <p className="text-xl lg:text-2xl text-white/60 mt-8 max-w-[700px] leading-relaxed">
+            Generate aesthetic production-ready <span className="text-white border-b-2 border-indigo-500/50 pb-1">digital experiences</span> from your mood boards
           </p>
 
           <VibeInput />
-          <IntegrationBar />
+          
+          <div className="mt-20 flex flex-col items-center gap-6">
+             <div className="flex gap-12 grayscale opacity-40 hover:grayscale-0 hover:opacity-100 transition-all duration-700">
+                <img src="/icons.svg" className="h-6" alt="" />
+                {/* Fallback text if svg doesn't show well */}
+                <div className="flex gap-8 text-[0.7rem] uppercase font-bold tracking-[0.2em] text-white">
+                  <span>Leaflet</span>
+                  <span>Vite</span>
+                  <span>React</span>
+                  <span>Supabase</span>
+                  <span>Tailwind</span>
+                </div>
+             </div>
+          </div>
         </div>
       </section>
 

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-const Sidebar = ({ onSubmit, isLoading, error, cityData }) => {
+const Sidebar = ({ onSubmit, isLoading, error, cityData, showElevation, setShowElevation, showBuildings, setShowBuildings }) => {
     const [cityName, setCityName] = useState('New York, NY');
 
     const handleSubmit = (e) => {
@@ -46,6 +46,32 @@ const Sidebar = ({ onSubmit, isLoading, error, cityData }) => {
                 {error && (
                     <div style={{ marginTop: '1rem', color: 'var(--accent-red)', fontSize: '0.875rem', padding: '0.75rem', backgroundColor: '#fef2f2', borderRadius: '0.5rem', border: '1px solid #fecaca' }}>
                         <strong>Error:</strong> {error}
+                    </div>
+                )}
+
+                {cityData && (
+                    <div style={{ marginTop: '1.25rem' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                            <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontSize: '0.875rem', fontWeight: 500, color: 'var(--text-primary)' }}>
+                                <input
+                                    type="checkbox"
+                                    checked={showElevation}
+                                    onChange={(e) => setShowElevation(e.target.checked)}
+                                    style={{ width: '16px', height: '16px', accentColor: 'var(--accent-blue)' }}
+                                />
+                                Show Terrain Elevation Map
+                            </label>
+
+                            <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontSize: '0.875rem', fontWeight: 500, color: 'var(--text-primary)' }}>
+                                <input
+                                    type="checkbox"
+                                    checked={showBuildings}
+                                    onChange={(e) => setShowBuildings(e.target.checked)}
+                                    style={{ width: '16px', height: '16px', accentColor: 'var(--accent-blue)' }}
+                                />
+                                Show Buildings Footprints
+                            </label>
+                        </div>
                     </div>
                 )}
 

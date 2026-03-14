@@ -2,24 +2,32 @@ import React, { useState } from 'react';
 import CityTwinEngine from './components/CityTwinEngine';
 import Sidebar from './components/Sidebar';
 import { fetchCityData } from './services/osmService';
+import { fetchElevationGrid } from './services/elevationService';
 import './index.css';
 
 function App() {
   const [cityData, setCityData] = useState(null);
+  const [elevationSamples, setElevation] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [showElevation, setShowElevation] = useState(false);
+  const [showBuildings, setShowBuildings] = useState(false);
 
   const handleCitySubmit = async (cityName) => {
     setIsLoading(true);
     setError(null);
+    setElevation(null);
     try {
-      console.log(`Fetching data for ${cityName}...`);
-      // 1. Fetch raw map data
+      // 1. Fetch city graph (roads, nodes, infrastructure)
       const data = await fetchCityData(cityName);
-      console.log('City Data Extracted:', data);
-
-      // 2. Set graph data to be rendered by Engine
       setCityData(data);
+
+      // 2. Fetch elevation grid in the background (non-blocking UX)
+      //    We kick it off here and update state when it arrives
+      fetchElevationGrid(data.bbox)
+        .then(samples => setElevation(samples))
+        .catch(err => console.warn('Elevation fetch failed (non-critical):', err.message));
+
     } catch (err) {
       console.error(err);
       setError(err.message || 'Failed to generate city twin.');
@@ -35,6 +43,10 @@ function App() {
         isLoading={isLoading}
         error={error}
         cityData={cityData}
+        showElevation={showElevation}
+        setShowElevation={setShowElevation}
+        showBuildings={showBuildings}
+        setShowBuildings={setShowBuildings}
       />
 
       <div className="map-container">
@@ -49,7 +61,7 @@ function App() {
         )}
 
         {cityData ? (
-          <CityTwinEngine data={cityData} />
+          <CityTwinEngine data={cityData} elevationSamples={elevationSamples} showElevation={showElevation} showBuildings={showBuildings} />
         ) : (
           <div style={{
             height: '100%', display: 'flex', alignItems: 'center',

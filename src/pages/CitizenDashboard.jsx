@@ -3,6 +3,9 @@ import { AlertTriangle, Bus, Radio, MapPin, PhoneCall, ShieldAlert, Navigation, 
 import { dataIntegrationService } from '../services/dataIntegrationService';
 import { agentManager } from '../agents/CityAgentManager';
 import { fetchCityData } from '../services/osmService';
+import { QueryAgent } from '../agents/QueryAgent';
+
+const queryBot = new QueryAgent();
 
 // Mock Data for aesthetics
 const MOCK_BROADCASTS = [
@@ -10,11 +13,6 @@ const MOCK_BROADCASTS = [
     { id: 2, text: "Annual City Marathon tomorrow. Downtown area will be restricted from 6 AM to 2 PM.", time: "2 hours ago" }
 ];
 
-const MOCK_TRANSIT_UPDATES = [
-    { id: 1, line: "Metro Line 2", status: "Delayed by 10 mins", reason: "Signal Maintenance", type: "warning" },
-    { id: 2, line: "Bus Route 42", status: "Diverted", reason: "Roadworks on Main St", type: "warning" },
-    { id: 3, line: "Metro Line 1", status: "On Time", reason: "Running smoothly", type: "success" }
-];
 
 export default function CitizenDashboard() {
     const [cityHealth, setCityHealth] = useState({ score: 100, status: 'Stable' });
@@ -30,6 +28,14 @@ export default function CitizenDashboard() {
     const [isLoadingCity, setIsLoadingCity] = useState(false);
     const [cityData, setCityData] = useState(null);
     const [cityError, setCityError] = useState(null);
+
+    const [publishedPlan, setPublishedPlan] = useState(null);
+    const [latestTickData, setLatestTickData] = useState(null);
+    const [chatQuery, setChatQuery] = useState('');
+    const [chatHistory, setChatHistory] = useState([
+        { role: 'ai', text: 'Hello! I am CityBuddy. Ask me anything about current traffic, weather, or emergencies.' }
+    ]);
+    const [isChatLoading, setIsChatLoading] = useState(false);
 
     const fetchNews = async (city) => {
         try {
@@ -80,16 +86,33 @@ export default function CitizenDashboard() {
 
     useEffect(() => {
         const handleTick = (data) => {
+            setLatestTickData(data); // Save for QueryAgent context
             const heavyTraffic = data.traffic.filter(t => t.level === 'heavy');
             setTrafficAnomalies(heavyTraffic.length);
 
             let score = 100 - (heavyTraffic.length * 2);
+            if (data.abnormalConditions && data.abnormalConditions.length > 0) {
+                 score -= (data.abnormalConditions.length * 5);
+            }
+
             let status = 'Stable';
             if (score < 70) status = 'Warning';
             if (score < 50) status = 'Critical';
             
             setCityHealth({ score: Math.max(0, score), status });
         };
+
+        // Poll LocalStorage for published action plan
+        const checkPlan = () => {
+             const planStr = localStorage.getItem('citybuddy_published_action_plan');
+             if (planStr) {
+                 try {
+                     setPublishedPlan(JSON.parse(planStr));
+                 } catch (e) {}
+             }
+        };
+        checkPlan();
+        const planInterval = setInterval(checkPlan, 3000);
 
         const handleAlerts = (activeAlerts) => {
             const publicFacing = activeAlerts.filter(a => a.severity === 'high' || a.severity === 'medium');
@@ -102,8 +125,30 @@ export default function CitizenDashboard() {
         return () => {
             unsubscribeTick();
             unsubscribeAlerts();
+            clearInterval(planInterval);
         };
     }, []);
+
+    const handleChatSubmit = async (e) => {
+        e.preventDefault();
+        if (!chatQuery.trim() || isChatLoading) return;
+
+        const userMsg = chatQuery.trim();
+        setChatHistory(prev => [...prev, { role: 'user', text: userMsg }]);
+        setChatQuery('');
+        setIsChatLoading(true);
+
+        const fullState = {
+            cityData: cityData,
+            sensorData: latestTickData,
+            areaParams: latestTickData?.areaConfig?.params || {}
+        };
+
+        const response = await queryBot.handleQuery(userMsg, fullState, publicAlerts);
+        
+        setChatHistory(prev => [...prev, { role: 'ai', text: response }]);
+        setIsChatLoading(false);
+    };
 
     const getGeolocation = () => {
         if ("geolocation" in navigator) {
@@ -292,25 +337,7 @@ export default function CitizenDashboard() {
                         </button>
                     </section>
 
-                    {/* Public Transport */}
-                    <section style={{ background: '#fff', padding: '1.5rem', borderRadius: '1rem', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
-                        <h2 style={{ fontSize: '1.1rem', fontWeight: 700, color: '#0f172a', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                            <Bus color="#f59e0b" /> Transport Updates
-                        </h2>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                            {MOCK_TRANSIT_UPDATES.map(update => (
-                                <div key={update.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: '0.75rem', borderBottom: '1px solid #f1f5f9' }}>
-                                    <div>
-                                        <div style={{ fontWeight: 600, color: '#334155', fontSize: '0.9rem' }}>{update.line}</div>
-                                        <div style={{ fontSize: '0.75rem', color: '#64748b' }}>{update.reason}</div>
-                                    </div>
-                                    <span style={{ fontSize: '0.75rem', fontWeight: 700, padding: '4px 8px', borderRadius: '12px', background: update.type === 'warning' ? '#fef3c7' : '#dcfce7', color: update.type === 'warning' ? '#b45309' : '#166534' }}>
-                                        {update.status}
-                                    </span>
-                                </div>
-                            ))}
-                        </div>
-                    </section>
+
 
                     {/* Emergency Contacts */}
                     <section style={{ background: '#fff', padding: '1.5rem', borderRadius: '1rem', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)', background: '#1e293b', color: 'white' }}>

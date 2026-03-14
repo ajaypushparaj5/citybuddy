@@ -63,6 +63,21 @@ export default function ActionPlanModal({ alert, cityData, sensorData, elevation
         }
     };
 
+    const [isPublished, setIsPublished] = useState(false);
+
+    const handlePublish = () => {
+        if (!plan) return;
+        localStorage.setItem('citybuddy_published_action_plan', JSON.stringify({
+            alertType: alert.type,
+            alertMessage: alert.message,
+            timestamp: Date.now(),
+            plan: plan,
+            source: source
+        }));
+        setIsPublished(true);
+        setTimeout(() => setIsPublished(false), 3000);
+    };
+
     return (
         // Backdrop
         <div
@@ -224,13 +239,27 @@ export default function ActionPlanModal({ alert, cityData, sensorData, elevation
                     <span style={{ fontSize: '0.65rem', color: '#475569' }}>
                         CityBuddy Intelligence Platform · For authorised government use only
                     </span>
-                    <button
-                        onClick={onClose}
-                        style={{
-                            background: '#1e293b', border: '1px solid #334155', color: '#94a3b8',
-                            cursor: 'pointer', borderRadius: '0.4rem', padding: '6px 16px', fontSize: '0.75rem'
-                        }}
-                    >Close</button>
+                    <div style={{ display: 'flex', gap: '0.75rem' }}>
+                        {plan && (
+                            <button
+                                onClick={handlePublish}
+                                style={{
+                                    background: isPublished ? '#10b981' : '#3b82f6', border: 'none', color: 'white',
+                                    cursor: 'pointer', borderRadius: '0.4rem', padding: '6px 16px', fontSize: '0.75rem',
+                                    fontWeight: 600, transition: 'all 0.2s'
+                                }}
+                            >
+                                {isPublished ? '✓ Published to Citizens' : '📢 Publish to Citizens'}
+                            </button>
+                        )}
+                        <button
+                            onClick={onClose}
+                            style={{
+                                background: '#1e293b', border: '1px solid #334155', color: '#94a3b8',
+                                cursor: 'pointer', borderRadius: '0.4rem', padding: '6px 16px', fontSize: '0.75rem'
+                            }}
+                        >Close</button>
+                    </div>
                 </div>
             </div>
 

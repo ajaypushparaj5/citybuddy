@@ -8,33 +8,10 @@ function Navbar() {
   if (location.pathname === '/') return null;
 
   return (
-    <nav style={{
-      position: 'absolute',
-      top: '16px',
-      right: '16px',
-      zIndex: 1000,
-      display: 'flex',
-      gap: '12px'
-    }}>
+    <nav className="absolute top-4 right-4 z-[1000] flex gap-3">
       <Link 
         to="/" 
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '8px',
-          padding: '10px 16px',
-          backgroundColor: 'rgba(15, 23, 42, 0.8)',
-          backdropFilter: 'blur(8px)',
-          color: 'white',
-          textDecoration: 'none',
-          borderRadius: '10px',
-          border: '1px solid rgba(255,255,255,0.1)',
-          fontSize: '0.9rem',
-          fontWeight: 500,
-          transition: 'background-color 0.2s'
-        }}
-        onMouseOver={(e) => e.target.style.backgroundColor = 'rgba(30, 41, 59, 0.9)'}
-        onMouseOut={(e) => e.target.style.backgroundColor = 'rgba(15, 23, 42, 0.8)'}
+        className="glass-strong flex items-center gap-2 px-4 py-2.5 text-white no-underline rounded-xl text-sm font-medium hover:bg-slate-700/90 transition-colors"
       >
         <Home size={18} />
         Back to Home

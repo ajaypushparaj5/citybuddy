@@ -8,7 +8,7 @@ import './index.css';
 function App() {
   return (
     <Router>
-      <div className="app-root">
+      <div className="min-h-screen bg-surface-white">
         <Navbar />
         <Routes>
           <Route path="/" element={<Home />} />

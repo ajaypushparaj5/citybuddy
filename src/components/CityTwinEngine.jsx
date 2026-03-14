@@ -92,51 +92,36 @@ function ElevationLayer({ elevationSamples, bbox }) {
 function InfoPanel({ info, onClose }) {
     if (!info) return null;
     return (
-        <div style={{
-            position: 'absolute',
-            bottom: 28,
-            right: 16,
-            zIndex: 1000,
-            background: '#fff',
-            border: '1px solid #e2e8f0',
-            borderRadius: '0.6rem',
-            boxShadow: '0 4px 16px rgba(0,0,0,0.1)',
-            padding: '1rem 1.2rem',
-            minWidth: 240,
-            fontFamily: 'Inter, system-ui, sans-serif',
-        }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.6rem' }}>
-                <span style={{ fontWeight: 700, fontSize: '0.875rem', color: '#0f172a' }}>📍 Location Info</span>
-                <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '1rem', color: '#94a3b8' }}>×</button>
+        <div className="absolute bottom-7 right-4 z-[1000] glass-strong rounded-xl p-4 min-w-[240px] font-inter border border-slate-200 shadow-xl">
+            <div className="flex justify-between items-center mb-3">
+                <span className="font-bold text-sm text-slate-900 flex items-center gap-1.5">
+                    <MapPin size={14} className="text-brand-indigo" /> Location Info
+                </span>
+                <button onClick={onClose} className="bg-none border-none cursor-pointer text-xl text-slate-400 hover:text-slate-600 transition-colors">×</button>
             </div>
-            <table style={{ fontSize: '0.8rem', width: '100%', borderCollapse: 'collapse' }}>
+            <table className="text-xs w-full border-collapse">
                 <tbody>
                     <tr>
-                        <td style={{ color: '#64748b', paddingBottom: 4 }}>Latitude</td>
-                        <td style={{ fontWeight: 600, textAlign: 'right' }}>{info.lat.toFixed(6)}°</td>
+                        <td className="text-slate-500 pb-1">Latitude</td>
+                        <td className="font-semibold text-right">{info.lat.toFixed(6)}°</td>
                     </tr>
                     <tr>
-                        <td style={{ color: '#64748b', paddingBottom: 4 }}>Longitude</td>
-                        <td style={{ fontWeight: 600, textAlign: 'right' }}>{info.lng.toFixed(6)}°</td>
+                        <td className="text-slate-500 pb-1">Longitude</td>
+                        <td className="font-semibold text-right">{info.lng.toFixed(6)}°</td>
                     </tr>
                     <tr>
-                        <td style={{ color: '#64748b', paddingBottom: 4 }}>Elevation</td>
-                        <td style={{ fontWeight: 600, textAlign: 'right', color: '#2563eb' }}>
+                        <td className="text-slate-500 pb-1">Elevation</td>
+                        <td className="font-bold text-right text-brand-indigo">
                             {info.elevation !== null ? elevationLabel(info.elevation) : 'Loading…'}
                         </td>
                     </tr>
                     {info.elevation !== null && (
                         <tr>
-                            <td colSpan={2} style={{ paddingTop: 6 }}>
-                                <div style={{
-                                    display: 'inline-block',
-                                    padding: '2px 10px',
-                                    borderRadius: 999,
-                                    background: elevationToColor(info.elevation),
-                                    fontSize: '0.7rem',
-                                    color: '#0f172a',
-                                    fontWeight: 600
-                                }}>
+                            <td colSpan={2} className="pt-2">
+                                <div 
+                                    className="inline-block px-3 py-1 rounded-full text-[0.65rem] text-slate-900 font-bold"
+                                    style={{ background: elevationToColor(info.elevation) }}
+                                >
                                     Elevation tier
                                 </div>
                             </td>
@@ -305,8 +290,10 @@ const CityTwinEngine = ({ data, elevationSamples, showElevation, showBuildings, 
                         icon={getPoiIcon(node.type)}
                     >
                         <Popup>
-                            <strong style={{ textTransform: 'capitalize' }}>{node.type.replace('_', ' ')}</strong>
-                            {node.tags?.name ? <><br />{node.tags.name}</> : ''}
+                            <div className="font-sans">
+                                <strong className="capitalize">{node.type.replace('_', ' ')}</strong>
+                                {node.tags?.name ? <><br /><span className="text-slate-500">{node.tags.name}</span></> : ''}
+                            </div>
                         </Popup>
                     </Marker>
                 ))}
@@ -319,12 +306,12 @@ const CityTwinEngine = ({ data, elevationSamples, showElevation, showBuildings, 
                         icon={getAlertIcon(alert.type)}
                     >
                         <Popup>
-                            <div style={{ padding: '2px' }}>
-                                <div style={{ fontSize: '0.7rem', fontWeight: 800, color: alert.severity === 'high' ? '#ef4444' : '#3b82f6', textTransform: 'uppercase', marginBottom: '4px' }}>
-                                    ⚠️ {alert.type} Alert
+                            <div className="p-0.5 font-sans">
+                                <div className={`text-[0.7rem] font-bold uppercase mb-1 flex items-center gap-1 ${alert.severity === 'high' ? 'text-red-500' : 'text-brand-indigo'}`}>
+                                    <AlertTriangle size={12} /> {alert.type} Alert
                                 </div>
-                                <div style={{ fontSize: '0.85rem', fontWeight: 600 }}>{alert.message}</div>
-                                <div style={{ fontSize: '0.7rem', color: '#64748b', marginTop: '4px' }}>Detected by CityMonitorAgent</div>
+                                <div className="text-sm font-semibold text-slate-900">{alert.message}</div>
+                                <div className="text-[0.65rem] text-slate-500 mt-1 font-medium italic">Detected by CityMonitorAgent</div>
                             </div>
                         </Popup>
                     </Marker>
@@ -333,13 +320,11 @@ const CityTwinEngine = ({ data, elevationSamples, showElevation, showBuildings, 
 
             {/* Elevation badge — loading indicator */}
             {showElevation && !elevationSamples && (
-                <div style={{
-                    position: 'absolute', top: 12, right: 12, zIndex: 1000,
-                    background: '#fff', border: '1px solid #e2e8f0', borderRadius: '0.4rem',
-                    padding: '4px 12px', fontSize: '0.75rem', color: '#64748b',
-                    boxShadow: '0 2px 8px rgba(0,0,0,0.07)'
-                }}>
-                    ⏳ Loading terrain elevation data…
+                <div className="absolute top-3 right-3 z-[1000] glass-strong rounded-lg px-3 py-1 text-xs text-slate-500 shadow-sm border border-slate-200">
+                    <span className="flex items-center gap-2">
+                        <div className="w-2 h-2 rounded-full bg-brand-indigo animate-pulse" />
+                        Loading terrain data…
+                    </span>
                 </div>
             )}
 

@@ -16,6 +16,8 @@ const Sidebar = ({
     setAreaParams,
     agentStates = [],
     elevationSamples = null,
+    onRunScenario,
+    onResetArea,
 }) => {
     const [cityName, setCityName] = useState('New York, NY');
     const [activeAgentTab, setActiveAgentTab] = useState(null);
@@ -73,23 +75,17 @@ const Sidebar = ({
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
                                 <h2 style={{ fontSize: '0.875rem', fontWeight: 700, color: '#1e40af', margin: 0 }}>📍 Area Simulation (Advanced)</h2>
                                 <button
-                                    onClick={() => setAreaParams({ 
-                                        rainfall: 0, windSpeed: 0, temperature: 22, fog: 0, earthquake: 0,
-                                        trafficDensity: 0, roadClosure: false, publicTransportFailure: false, accidentRate: 0,
-                                        powerGridLoad: 50, powerOutage: false, waterPressure: 100, cellTowerCongestion: 0,
-                                        crowdDensity: 0, publicEvent: false, evacuationOrder: false,
-                                        fireRisk: 0, chemicalSpill: false, airQuality: 50 
-                                    })}
-                                    style={{ background: 'none', border: 'none', color: '#60a5fa', fontSize: '0.75rem', cursor: 'pointer' }}
+                                    onClick={onResetArea}
+                                    style={{ background: 'none', border: 'none', color: '#60a5fa', fontSize: '0.75rem', cursor: 'pointer', padding: '0.25rem 0.5rem' }}
                                 >Reset All</button>
                             </div>
 
                             <div style={{ maxHeight: '350px', overflowY: 'auto', paddingRight: '0.5rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                                
+
                                 {/* WEATHER */}
                                 <div style={{ background: 'rgba(255,255,255,0.5)', padding: '0.5rem', borderRadius: '0.4rem' }}>
                                     <h3 style={{ fontSize: '0.75rem', color: '#475569', margin: '0 0 0.5rem 0', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>☀️ Weather & Environment</h3>
-                                    
+
                                     <div style={{ marginBottom: '0.5rem' }}>
                                         <label style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.65rem', color: '#1e40af', fontWeight: 600, marginBottom: '0.25rem' }}>
                                             Rainfall <span>{(areaParams.rainfall * 100).toFixed(0)}%</span>
@@ -119,7 +115,7 @@ const Sidebar = ({
                                 {/* TRANSPORT */}
                                 <div style={{ background: 'rgba(255,255,255,0.5)', padding: '0.5rem', borderRadius: '0.4rem' }}>
                                     <h3 style={{ fontSize: '0.75rem', color: '#475569', margin: '0 0 0.5rem 0', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>🚦 Transport</h3>
-                                    
+
                                     <div style={{ marginBottom: '0.5rem' }}>
                                         <label style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.65rem', color: '#1e40af', fontWeight: 600, marginBottom: '0.25rem' }}>
                                             Traffic Density <span>{(areaParams.trafficDensity * 100).toFixed(0)}%</span>
@@ -139,7 +135,7 @@ const Sidebar = ({
                                 {/* INFRASTRUCTURE */}
                                 <div style={{ background: 'rgba(255,255,255,0.5)', padding: '0.5rem', borderRadius: '0.4rem' }}>
                                     <h3 style={{ fontSize: '0.75rem', color: '#475569', margin: '0 0 0.5rem 0', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>⚡ Infrastructure</h3>
-                                    
+
                                     <div style={{ marginBottom: '0.5rem' }}>
                                         <label style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.65rem', color: '#1e40af', fontWeight: 600, marginBottom: '0.25rem' }}>
                                             Power Grid Load <span>{areaParams.powerGridLoad}%</span>
@@ -155,7 +151,7 @@ const Sidebar = ({
                                 {/* POPULATION & EVENTS */}
                                 <div style={{ background: 'rgba(255,255,255,0.5)', padding: '0.5rem', borderRadius: '0.4rem' }}>
                                     <h3 style={{ fontSize: '0.75rem', color: '#475569', margin: '0 0 0.5rem 0', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>👥 Population & Events</h3>
-                                    
+
                                     <div style={{ marginBottom: '0.5rem' }}>
                                         <label style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.65rem', color: '#1e40af', fontWeight: 600, marginBottom: '0.25rem' }}>
                                             Crowd Density <span>{(areaParams.crowdDensity * 100).toFixed(0)}%</span>
@@ -171,7 +167,7 @@ const Sidebar = ({
                                 {/* CRISIS SCENARIOS */}
                                 <div style={{ background: 'rgba(255,255,255,0.5)', padding: '0.5rem', borderRadius: '0.4rem', borderLeft: '3px solid #ef4444' }}>
                                     <h3 style={{ fontSize: '0.75rem', color: '#ef4444', margin: '0 0 0.5rem 0', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>🔥 Crisis Scenarios</h3>
-                                    
+
                                     <div style={{ marginBottom: '0.5rem' }}>
                                         <label style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.65rem', color: '#991b1b', fontWeight: 600, marginBottom: '0.25rem' }}>
                                             Fire Risk Index <span>{(areaParams.fireRisk * 100).toFixed(0)}%</span>
@@ -188,7 +184,30 @@ const Sidebar = ({
                                     </div>
                                 </div>
                             </div>
-                            
+
+                            <button
+                                onClick={onRunScenario}
+                                style={{
+                                    width: '100%',
+                                    marginTop: '0.75rem',
+                                    padding: '0.75rem',
+                                    background: 'linear-gradient(135deg, #2563eb, #3b82f6)',
+                                    color: 'white',
+                                    border: 'none',
+                                    borderRadius: '0.5rem',
+                                    fontWeight: 'bold',
+                                    cursor: 'pointer',
+                                    boxShadow: '0 4px 6px -1px rgba(37, 99, 235, 0.4)',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    gap: '0.5rem'
+                                }}
+                            >
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                                Run Scenario
+                            </button>
+
                             <p style={{ fontSize: '0.65rem', color: '#64748b', marginTop: '0.75rem', fontStyle: 'italic', textAlign: 'center' }}>
                                 *Right-click map to move selection.
                             </p>

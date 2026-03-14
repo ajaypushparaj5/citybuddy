@@ -79,6 +79,7 @@ export async function fetchCityData(cityName) {
 function processOsmData(rawOsmData, centerLat, centerLon) {
     const nodesMap = new Map();
     const rawNodes = [];
+    const poiNodes = [];   // ← collect POIs separately so they're never lost
     const edges = [];
 
     const infrastructureStats = {
@@ -97,15 +98,20 @@ function processOsmData(rawOsmData, centerLat, centerLon) {
                 tags: el.tags || {}
             });
 
-            // Track infrastructure specifically
+            // Track infrastructure specifically — push POIs into separate array
             if (el.tags && el.tags.amenity) {
+                const node = nodesMap.get(el.id);
                 if (el.tags.amenity === 'hospital') {
-                    nodesMap.get(el.id).type = 'hospital';
+                    node.type = 'hospital';
                     infrastructureStats.hospitals++;
-                }
-                if (el.tags.amenity === 'police' || el.tags.amenity === 'fire_station') {
-                    nodesMap.get(el.id).type = 'emergency';
+                    poiNodes.push(node);  // ← always collected regardless of ways
+                } else if (el.tags.amenity === 'police' || el.tags.amenity === 'fire_station') {
+                    node.type = 'emergency';
                     infrastructureStats.emergency++;
+                    poiNodes.push(node);
+                } else if (el.tags.amenity === 'school') {
+                    node.type = 'school';
+                    poiNodes.push(node);
                 }
             }
         }
@@ -139,14 +145,21 @@ function processOsmData(rawOsmData, centerLat, centerLon) {
         }
     });
 
-    // Generate unique nodes array
-    const uniqueNodes = Array.from(new Set(rawNodes));
+    // Generate unique nodes array: road intersections + always include POIs
+    const seenIds = new Set();
+    const uniqueNodes = [];
+    for (const n of [...rawNodes, ...poiNodes]) {
+        if (!seenIds.has(n.id)) {
+            seenIds.add(n.id);
+            uniqueNodes.push(n);
+        }
+    }
 
     return {
-        center: [centerLon, centerLat], // DeckGL uses [longitude, latitude]
+        center: [centerLon, centerLat],
         nodes: uniqueNodes,
         edges: edges,
         infrastructure: infrastructureStats,
-        rawOsm: null // Keep this clean for performance
+        rawOsm: null
     };
 }

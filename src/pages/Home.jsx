@@ -2,8 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   Map, Send, Paperclip, 
-  ArrowRight, Globe, Shield, Boxes, ChevronDown, ArrowUp
+  ArrowRight, Globe, Shield, Boxes, ChevronDown, ArrowUp, Sparkles, Monitor
 } from 'lucide-react';
+import { LightBeamButton } from '../components/LightBeamButton';
 
 // --- Sub-components ---
 
@@ -98,7 +99,7 @@ const FeatureCard = ({ title, description, badge, visual, reversed }) => {
         <div className="text-brand-indigo font-bold text-sm mb-4 flex items-center gap-2">
           <Shield size={16} /> {badge}
         </div>
-        <h2 className="font-lora text-5xl font-semibold mb-6 text-primary-dark">{title}</h2>
+        <h2 className="font-cormorant text-5xl font-semibold mb-6 text-primary-dark">{title}</h2>
         <p className="text-lg text-slate-600 leading-relaxed mb-8">{description}</p>
         <button className="flex items-center gap-2 text-primary-dark font-bold text-base cursor-pointer hover:translate-x-1 transition-transform">
           Explore documentation <ArrowRight size={20} />
@@ -201,13 +202,17 @@ export default function Home() {
             Build high-fidelity digital twins and <span className="text-white/80 border-b border-white/20 pb-0.5">monitor autonomous dynamics</span> in real-time.
           </p>
 
-          <div className="mt-40 flex flex-wrap justify-center gap-4">
-            <button className="px-8 py-4 bg-white text-slate-900 font-extralight rounded-full hover:scale-105 transition-transform cursor-pointer">
-              Launch Engine
-            </button>
-            <button className="px-8 py-4 bg-white/10 text-white font-extralight rounded-full backdrop-blur-md border border-white/10 hover:bg-white/20 transition-all cursor-pointer">
-              Watch Demo
-            </button>
+          <div className="mt-40 flex flex-wrap justify-center gap-6">
+            <LightBeamButton onClick={() => navigate('/twin')}>
+              Launch City Engine <Monitor size={18} />
+            </LightBeamButton>
+            
+            <LightBeamButton 
+              className="bg-white/5 border-white/5 hover:bg-white/10" 
+              gradientColors={["#ffffff20", "#ffffff40", "#ffffff20"]}
+            >
+              Watch Reality Demo
+            </LightBeamButton>
           </div>
           {/* <VibeInput /> */}
           
@@ -288,7 +293,7 @@ export default function Home() {
       {/* 3. Testimonials (Glass Masonry) */}
       <section id="testimonials" className="bg-primary-dark py-24 lg:py-32 px-5">
         <div className="max-w-[1200px] mx-auto">
-          <h2 className="font-lora text-5xl lg:text-[3.5rem] leading-tight text-white text-center mb-20">Built for the <span className="text-brand-indigo">boldest planners.</span></h2>
+          <h2 className="font-cormorant text-5xl lg:text-[3.5rem] leading-tight text-white text-center mb-20">Built for the <span className="text-brand-indigo">boldest planners.</span></h2>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <TestimonialCard 
@@ -314,7 +319,7 @@ export default function Home() {
       <section id="faq" className="py-24 lg:py-32 px-5 bg-white">
         <div className="max-w-[800px] mx-auto">
           <div className="text-center mb-16">
-            <h2 className="font-lora text-5xl font-semibold text-primary-dark mb-4">Common Questions</h2>
+            <h2 className="font-cormorant text-5xl font-semibold text-primary-dark mb-4">Common Questions</h2>
             <p className="text-slate-500 text-lg">Everything you need to know about the CityBuddy ecosystem.</p>
           </div>
           

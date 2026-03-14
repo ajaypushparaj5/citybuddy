@@ -56,8 +56,8 @@ export class EmergencyAgent extends BaseAgent {
             An incident has occurred at coordinates [${alert.lat?.toFixed(5)}, ${alert.lon?.toFixed(5)}].
             Type: ${alert.type} | Severity: ${alert.severity}
 
-            Based on the available infrastructure options below, decide the best response.
-            - For a flood/flood_warning: prioritise shelter establishment at a school, or dispatch rescue from nearest emergency station.
+            Based on the available infrastructure options and the current abnormal city conditions (weather, transport, infrastructure failures), decide the best response.
+            - For a flood/flood_warning: prioritise shelter establishment at a school, or dispatch rescue from nearest emergency station. Consider road closures or bad weather if active.
             - For an accident: dispatch ambulance from nearest hospital.
             - For any type: also recommend any police coordination if needed.
 
@@ -65,13 +65,14 @@ export class EmergencyAgent extends BaseAgent {
             {
               "best_location_index": <number 0-${closestPois.length - 1}>,
               "response_type": "dispatch_ambulance" | "dispatch_fire" | "establish_shelter" | "police_response",
-              "action_instructions": "<A single clear sentence: what unit goes from where to where and what to do>"
+              "action_instructions": "<A single clear sentence: what unit goes from where to where and what to do, factoring in current hazards>"
             }
         `;
 
         const userPrompt = JSON.stringify({
             incident: { type: alert.type, severity: alert.severity, message: alert.message, lat: alert.lat, lon: alert.lon },
-            available_infrastructure: closestPois.map((p, i) => `[${i}] ${p.name} (${p.type}) at [${p.lat?.toFixed(4)}, ${p.lon?.toFixed(4)}]`)
+            available_infrastructure: closestPois.map((p, i) => `[${i}] ${p.name} (${p.type}) at [${p.lat?.toFixed(4)}, ${p.lon?.toFixed(4)}]`),
+            current_hazards: this.currentAbnormalConditions || []
         });
 
         const decision = await this.promptAI(systemPrompt, userPrompt);
@@ -96,6 +97,7 @@ export class EmergencyAgent extends BaseAgent {
     }
 
     async processTick(tickData) {
-        // Emergency agent mostly reactive to cross-agent alerts
+        // Emergency agent mostly reactive to cross-agent alerts, but we track environmental conditions for context
+        this.currentAbnormalConditions = tickData.abnormalConditions || [];
     }
 }

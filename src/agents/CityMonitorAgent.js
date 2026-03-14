@@ -10,13 +10,13 @@ export class CityMonitorAgent extends BaseAgent {
     }
 
     async processTick(tickData) {
-        const { traffic, sensors, weather } = tickData;
+        const { traffic, sensors, weather, abnormalConditions = [] } = tickData;
 
         // 1. Heuristic Check: Are there any immediate red flags?
         const heavyTraffic = traffic.filter(t => t.level === 'heavy');
-        const significantSensors = sensors.filter(s => s.type === 'accident' || (s.type === 'flood_sensor' && s.value > 1.5));
+        const significantSensors = sensors.filter(s => s.type === 'accident' || (s.type === 'flood_sensor' && s.value > 1.5) || s.type === 'hazard' || s.type === 'infrastructure' || s.type === 'public_safety');
 
-        if (heavyTraffic.length < 2 && significantSensors.length === 0) {
+        if (heavyTraffic.length < 2 && significantSensors.length === 0 && abnormalConditions.length === 0) {
             // All quiet, reset state tracker
             this.lastAnomalyState = null;
             return;
@@ -25,7 +25,8 @@ export class CityMonitorAgent extends BaseAgent {
         // 2. Change Detection: Has the anomaly state actually changed since the last check?
         const currentAnomalyState = JSON.stringify({
             traffic: heavyTraffic.map(t => t.edgeId).sort(),
-            sensors: significantSensors.map(s => `${s.type}-${s.lat}-${s.lon}`).sort()
+            sensors: significantSensors.map(s => `${s.type}-${s.lat}-${s.lon}`).sort(),
+            abnormals: abnormalConditions.map(a => `${a.type}-${a.severity}`).sort()
         });
 
         const now = Date.now();
@@ -40,20 +41,22 @@ export class CityMonitorAgent extends BaseAgent {
         this.lastAnomalyState = currentAnomalyState;
         this.lastReasoningTime = now;
 
-        // 3. Prompt Gemini for analysis
-        console.log(`[${this.name}] ${isNewState ? 'New anomalies' : 'Persistent anomalies'} detected. Prompting Gemini...`);
+        // 3. Prompt AI for analysis
+        console.log(`[${this.name}] ${isNewState ? 'New anomalies' : 'Persistent anomalies'} detected. Prompting AI...`);
         
         const systemPrompt = `
             You are the CityMonitorAgent for a Smart City Digital Twin.
-            Analyze the following sensor and traffic data and return a JSON list of alerts.
-            Each alert must have: { "type": "traffic"|"accident"|"flood"|"weather", "severity": "low"|"medium"|"high", "message": "Short description", "lat": number, "lon": number }
+            Analyze the following sensor, traffic data, and abnormal area conditions.
+            Return a JSON list of alerts.
+            Each alert must have: { "type": "traffic"|"accident"|"flood"|"weather"|"crisis"|"infrastructure"|"population", "severity": "low"|"medium"|"high", "message": "Short description", "lat": number, "lon": number }
             Return ONLY the valid JSON array of objects.
         `;
 
         const userPrompt = JSON.stringify({
             currentWeather: weather,
             activeTrafficAnomalies: heavyTraffic,
-            sensorAlerts: significantSensors
+            sensorAlerts: significantSensors,
+            abnormalAreaConditions: abnormalConditions
         });
 
         const alerts = await this.promptAI(systemPrompt, userPrompt);

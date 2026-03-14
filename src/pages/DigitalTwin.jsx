@@ -17,7 +17,18 @@ function DigitalTwin() {
   const [sensorData, setSensorData] = useState(null);
   const [selectedArea, setSelectedArea] = useState(null);
 
-  const [areaParams, setAreaParams] = useState({ rainfall: 0, trafficDensity: 0 });
+  const [areaParams, setAreaParams] = useState({ 
+    // Weather
+    rainfall: 0, windSpeed: 0, temperature: 22, fog: 0, earthquake: 0,
+    // Transport
+    trafficDensity: 0, roadClosure: false, publicTransportFailure: false, accidentRate: 0,
+    // Infrastructure
+    powerGridLoad: 50, powerOutage: false, waterPressure: 100, cellTowerCongestion: 0,
+    // Population
+    crowdDensity: 0, publicEvent: false, evacuationOrder: false,
+    // Crisis
+    fireRisk: 0, chemicalSpill: false, airQuality: 50
+  });
   const [agentStates, setAgentStates] = useState([]);
 
   const handleCitySubmit = async (cityName) => {

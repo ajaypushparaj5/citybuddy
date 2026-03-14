@@ -74,6 +74,7 @@ function buildContext({ alert, cityData, sensorData, elevationSamples }) {
             condition: sensorData.weather.condition,
             rainfallMm: sensorData.weather.rainfall?.toFixed(1),
         } : null,
+        abnormalConditions: sensorData?.abnormalConditions || [],
         nearbyInfrastructure: {
             hospitals: nearbyHospitals.map(h => `${h.name} (${h.distKm.toFixed(2)} km)`),
             emergency: nearbyEmergency.map(e => `${e.name} (${e.distKm.toFixed(2)} km)`),

@@ -71,37 +71,125 @@ const Sidebar = ({
                     {selectedArea && (
                         <div style={{ marginTop: '1.5rem', padding: '1rem', background: '#eff6ff', borderRadius: '0.6rem', border: '1px solid #bfdbfe' }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
-                                <h2 style={{ fontSize: '0.875rem', fontWeight: 700, color: '#1e40af', margin: 0 }}>📍 Area Simulation</h2>
+                                <h2 style={{ fontSize: '0.875rem', fontWeight: 700, color: '#1e40af', margin: 0 }}>📍 Area Simulation (Advanced)</h2>
                                 <button
-                                    onClick={() => { setAreaParams({ rainfall: 0, trafficDensity: 0 }); /* parent handles closing via state logic or we just let it be */ }}
+                                    onClick={() => setAreaParams({ 
+                                        rainfall: 0, windSpeed: 0, temperature: 22, fog: 0, earthquake: 0,
+                                        trafficDensity: 0, roadClosure: false, publicTransportFailure: false, accidentRate: 0,
+                                        powerGridLoad: 50, powerOutage: false, waterPressure: 100, cellTowerCongestion: 0,
+                                        crowdDensity: 0, publicEvent: false, evacuationOrder: false,
+                                        fireRisk: 0, chemicalSpill: false, airQuality: 50 
+                                    })}
                                     style={{ background: 'none', border: 'none', color: '#60a5fa', fontSize: '0.75rem', cursor: 'pointer' }}
-                                >Reset</button>
+                                >Reset All</button>
                             </div>
 
-                            <div style={{ marginBottom: '1rem' }}>
-                                <label style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.7rem', color: '#1e40af', fontWeight: 600, marginBottom: '0.25rem' }}>
-                                    Local Rainfall <span>{(areaParams.rainfall * 100).toFixed(0)}%</span>
-                                </label>
-                                <input
-                                    type="range" min="0" max="1" step="0.05"
-                                    value={areaParams.rainfall}
-                                    onChange={(e) => setAreaParams({ ...areaParams, rainfall: parseFloat(e.target.value) })}
-                                    style={{ width: '100%', accentColor: '#3b82f6', height: '4px' }}
-                                />
-                            </div>
+                            <div style={{ maxHeight: '350px', overflowY: 'auto', paddingRight: '0.5rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                                
+                                {/* WEATHER */}
+                                <div style={{ background: 'rgba(255,255,255,0.5)', padding: '0.5rem', borderRadius: '0.4rem' }}>
+                                    <h3 style={{ fontSize: '0.75rem', color: '#475569', margin: '0 0 0.5rem 0', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>☀️ Weather & Environment</h3>
+                                    
+                                    <div style={{ marginBottom: '0.5rem' }}>
+                                        <label style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.65rem', color: '#1e40af', fontWeight: 600, marginBottom: '0.25rem' }}>
+                                            Rainfall <span>{(areaParams.rainfall * 100).toFixed(0)}%</span>
+                                        </label>
+                                        <input type="range" min="0" max="1" step="0.05" value={areaParams.rainfall} onChange={(e) => setAreaParams({ ...areaParams, rainfall: parseFloat(e.target.value) })} style={{ width: '100%', accentColor: '#3b82f6', height: '4px' }} />
+                                    </div>
+                                    <div style={{ marginBottom: '0.5rem' }}>
+                                        <label style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.65rem', color: '#1e40af', fontWeight: 600, marginBottom: '0.25rem' }}>
+                                            Wind Speed <span>{areaParams.windSpeed} km/h</span>
+                                        </label>
+                                        <input type="range" min="0" max="150" step="5" value={areaParams.windSpeed} onChange={(e) => setAreaParams({ ...areaParams, windSpeed: parseFloat(e.target.value) })} style={{ width: '100%', accentColor: '#3b82f6', height: '4px' }} />
+                                    </div>
+                                    <div style={{ marginBottom: '0.5rem' }}>
+                                        <label style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.65rem', color: '#1e40af', fontWeight: 600, marginBottom: '0.25rem' }}>
+                                            Temperature <span>{areaParams.temperature}°C</span>
+                                        </label>
+                                        <input type="range" min="-20" max="50" step="1" value={areaParams.temperature} onChange={(e) => setAreaParams({ ...areaParams, temperature: parseFloat(e.target.value) })} style={{ width: '100%', accentColor: '#3b82f6', height: '4px' }} />
+                                    </div>
+                                    <div style={{ marginBottom: '0.5rem' }}>
+                                        <label style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.65rem', color: '#1e40af', fontWeight: 600, marginBottom: '0.25rem' }}>
+                                            Earthquake Intensity <span>{areaParams.earthquake.toFixed(1)} M</span>
+                                        </label>
+                                        <input type="range" min="0" max="9" step="0.5" value={areaParams.earthquake} onChange={(e) => setAreaParams({ ...areaParams, earthquake: parseFloat(e.target.value) })} style={{ width: '100%', accentColor: '#3b82f6', height: '4px' }} />
+                                    </div>
+                                </div>
 
-                            <div>
-                                <label style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.7rem', color: '#1e40af', fontWeight: 600, marginBottom: '0.25rem' }}>
-                                    Local Traffic Density <span>{(areaParams.trafficDensity * 100).toFixed(0)}%</span>
-                                </label>
-                                <input
-                                    type="range" min="0" max="1" step="0.05"
-                                    value={areaParams.trafficDensity}
-                                    onChange={(e) => setAreaParams({ ...areaParams, trafficDensity: parseFloat(e.target.value) })}
-                                    style={{ width: '100%', accentColor: '#3b82f6', height: '4px' }}
-                                />
+                                {/* TRANSPORT */}
+                                <div style={{ background: 'rgba(255,255,255,0.5)', padding: '0.5rem', borderRadius: '0.4rem' }}>
+                                    <h3 style={{ fontSize: '0.75rem', color: '#475569', margin: '0 0 0.5rem 0', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>🚦 Transport</h3>
+                                    
+                                    <div style={{ marginBottom: '0.5rem' }}>
+                                        <label style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.65rem', color: '#1e40af', fontWeight: 600, marginBottom: '0.25rem' }}>
+                                            Traffic Density <span>{(areaParams.trafficDensity * 100).toFixed(0)}%</span>
+                                        </label>
+                                        <input type="range" min="0" max="1" step="0.05" value={areaParams.trafficDensity} onChange={(e) => setAreaParams({ ...areaParams, trafficDensity: parseFloat(e.target.value) })} style={{ width: '100%', accentColor: '#8b5cf6', height: '4px' }} />
+                                    </div>
+                                    <div style={{ marginBottom: '0.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                        <span style={{ fontSize: '0.65rem', color: '#1e40af', fontWeight: 600 }}>Major Road Closure</span>
+                                        <input type="checkbox" checked={areaParams.roadClosure} onChange={(e) => setAreaParams({ ...areaParams, roadClosure: e.target.checked })} style={{ accentColor: '#ef4444' }} />
+                                    </div>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                        <span style={{ fontSize: '0.65rem', color: '#1e40af', fontWeight: 600 }}>Transit Network Failure</span>
+                                        <input type="checkbox" checked={areaParams.publicTransportFailure} onChange={(e) => setAreaParams({ ...areaParams, publicTransportFailure: e.target.checked })} style={{ accentColor: '#ef4444' }} />
+                                    </div>
+                                </div>
+
+                                {/* INFRASTRUCTURE */}
+                                <div style={{ background: 'rgba(255,255,255,0.5)', padding: '0.5rem', borderRadius: '0.4rem' }}>
+                                    <h3 style={{ fontSize: '0.75rem', color: '#475569', margin: '0 0 0.5rem 0', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>⚡ Infrastructure</h3>
+                                    
+                                    <div style={{ marginBottom: '0.5rem' }}>
+                                        <label style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.65rem', color: '#1e40af', fontWeight: 600, marginBottom: '0.25rem' }}>
+                                            Power Grid Load <span>{areaParams.powerGridLoad}%</span>
+                                        </label>
+                                        <input type="range" min="0" max="150" step="10" value={areaParams.powerGridLoad} onChange={(e) => setAreaParams({ ...areaParams, powerGridLoad: parseFloat(e.target.value) })} style={{ width: '100%', accentColor: '#f59e0b', height: '4px' }} />
+                                    </div>
+                                    <div style={{ marginBottom: '0.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                        <span style={{ fontSize: '0.65rem', color: '#1e40af', fontWeight: 600 }}>Blackout / Power Outage</span>
+                                        <input type="checkbox" checked={areaParams.powerOutage} onChange={(e) => setAreaParams({ ...areaParams, powerOutage: e.target.checked })} style={{ accentColor: '#0f172a' }} />
+                                    </div>
+                                </div>
+
+                                {/* POPULATION & EVENTS */}
+                                <div style={{ background: 'rgba(255,255,255,0.5)', padding: '0.5rem', borderRadius: '0.4rem' }}>
+                                    <h3 style={{ fontSize: '0.75rem', color: '#475569', margin: '0 0 0.5rem 0', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>👥 Population & Events</h3>
+                                    
+                                    <div style={{ marginBottom: '0.5rem' }}>
+                                        <label style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.65rem', color: '#1e40af', fontWeight: 600, marginBottom: '0.25rem' }}>
+                                            Crowd Density <span>{(areaParams.crowdDensity * 100).toFixed(0)}%</span>
+                                        </label>
+                                        <input type="range" min="0" max="1" step="0.1" value={areaParams.crowdDensity} onChange={(e) => setAreaParams({ ...areaParams, crowdDensity: parseFloat(e.target.value) })} style={{ width: '100%', accentColor: '#10b981', height: '4px' }} />
+                                    </div>
+                                    <div style={{ marginBottom: '0.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                        <span style={{ fontSize: '0.65rem', color: '#1e40af', fontWeight: 600 }}>Major Public Event</span>
+                                        <input type="checkbox" checked={areaParams.publicEvent} onChange={(e) => setAreaParams({ ...areaParams, publicEvent: e.target.checked })} style={{ accentColor: '#10b981' }} />
+                                    </div>
+                                </div>
+
+                                {/* CRISIS SCENARIOS */}
+                                <div style={{ background: 'rgba(255,255,255,0.5)', padding: '0.5rem', borderRadius: '0.4rem', borderLeft: '3px solid #ef4444' }}>
+                                    <h3 style={{ fontSize: '0.75rem', color: '#ef4444', margin: '0 0 0.5rem 0', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>🔥 Crisis Scenarios</h3>
+                                    
+                                    <div style={{ marginBottom: '0.5rem' }}>
+                                        <label style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.65rem', color: '#991b1b', fontWeight: 600, marginBottom: '0.25rem' }}>
+                                            Fire Risk Index <span>{(areaParams.fireRisk * 100).toFixed(0)}%</span>
+                                        </label>
+                                        <input type="range" min="0" max="1" step="0.1" value={areaParams.fireRisk} onChange={(e) => setAreaParams({ ...areaParams, fireRisk: parseFloat(e.target.value) })} style={{ width: '100%', accentColor: '#ef4444', height: '4px' }} />
+                                    </div>
+                                    <div style={{ marginBottom: '0.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                        <span style={{ fontSize: '0.65rem', color: '#991b1b', fontWeight: 600 }}>Chemical / Hazmat Spill</span>
+                                        <input type="checkbox" checked={areaParams.chemicalSpill} onChange={(e) => setAreaParams({ ...areaParams, chemicalSpill: e.target.checked })} style={{ accentColor: '#84cc16' }} />
+                                    </div>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                        <span style={{ fontSize: '0.65rem', color: '#991b1b', fontWeight: 600 }}>Evacuation Ordered</span>
+                                        <input type="checkbox" checked={areaParams.evacuationOrder} onChange={(e) => setAreaParams({ ...areaParams, evacuationOrder: e.target.checked })} style={{ accentColor: '#dc2626' }} />
+                                    </div>
+                                </div>
                             </div>
-                            <p style={{ fontSize: '0.65rem', color: '#64748b', marginTop: '0.5rem', fontStyle: 'italic' }}>
+                            
+                            <p style={{ fontSize: '0.65rem', color: '#64748b', marginTop: '0.75rem', fontStyle: 'italic', textAlign: 'center' }}>
                                 *Right-click map to move selection.
                             </p>
                         </div>

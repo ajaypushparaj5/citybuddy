@@ -1,82 +1,96 @@
-import React from 'react';
-import DeckGL from '@deck.gl/react';
-import { ScatterplotLayer, LineLayer } from '@deck.gl/layers';
+import React, { useMemo, useRef, useEffect } from 'react';
+import { MapContainer, TileLayer, Polyline, CircleMarker, Popup, useMap } from 'react-leaflet';
+import 'leaflet/dist/leaflet.css';
+
+// Helper: fly to new city center whenever data changes
+function FlyTo({ center }) {
+    const map = useMap();
+    useEffect(() => {
+        if (center) map.flyTo(center, 15, { duration: 1.2 });
+    }, [center, map]);
+    return null;
+}
 
 const CityTwinEngine = ({ data }) => {
-    // We use the center coordinates retrieved from OSM
-    const initialViewState = {
-        longitude: data.center[0],
-        latitude: data.center[1],
-        zoom: 13.5,
-        pitch: 45,
-        bearing: 0
+    const center = [data.center[1], data.center[0]]; // [lat, lng]
+
+    const majorTypes = useMemo(() => new Set(['motorway', 'trunk', 'primary', 'secondary']), []);
+
+    const poiColor = (type) => {
+        if (type === 'hospital') return '#dc2626';
+        if (type === 'emergency') return '#0d9488';
+        if (type === 'school') return '#f59e0b';
+        return '#64748b';
     };
 
-    // Build high performance WebGL visual layers for Phase 1 
-
-    // 1. Edges / Roads layer
-    const edgesLayer = new LineLayer({
-        id: 'road-edges-layer',
-        data: data.edges,
-        getSourcePosition: d => [d.source.lon, d.source.lat],
-        getTargetPosition: d => [d.target.lon, d.target.lat],
-        getColor: d => {
-            // Differentiate road styles: main roads blue, residential gray
-            if (['motorway', 'primary', 'secondary'].includes(d.roadType)) {
-                return [37, 99, 235, 200]; // Accent-blue
-            }
-            return [148, 163, 184, 150]; // Light gray Slate-400
-        },
-        getWidth: d => {
-            if (['motorway', 'primary', 'secondary'].includes(d.roadType)) return 3;
-            return 1;
-        },
-        pickable: true
-    });
-
-    // 2. Nodes / Intersections + Infrastructure layer
-    const nodesLayer = new ScatterplotLayer({
-        id: 'infrastructure-nodes-layer',
-        data: data.nodes,
-        getPosition: d => [d.lon, d.lat],
-        getFillColor: d => {
-            if (d.type === 'hospital') return [220, 38, 38, 255]; // Red
-            if (d.type === 'emergency') return [13, 148, 136, 255]; // Teal
-            return [100, 116, 139, 100]; // Slate-500 nodes for generic intersections
-        },
-        getRadius: d => {
-            if (d.type === 'hospital' || d.type === 'emergency') return 20;
-            return 3;
-        },
-        radiusMinPixels: 2,
-        pickable: true
-    });
-
-    const getTooltip = ({ object }) => {
-        if (!object) return null;
-
-        // For nodes
-        if (object.lat && object.lon) {
-            return `Type: ${object.type} \n ID: ${object.id}`;
-        }
-        // For edges
-        if (object.roadType) {
-            return `Road: ${object.roadType}`;
-        }
-        return null;
-    };
+    const pois = useMemo(() => data.nodes.filter(n => n.type !== 'intersection'), [data.nodes]);
+    const intersections = useMemo(() => data.nodes.filter(n => n.type === 'intersection').slice(0, 4000), [data.nodes]);
 
     return (
-        <div style={{ position: 'relative', width: '100%', height: '100%' }}>
-            <DeckGL
-                initialViewState={initialViewState}
-                controller={true}
-                layers={[edgesLayer, nodesLayer]}
-                getTooltip={getTooltip}
-                // Very subtle off-white background to match the clean light theme
-                style={{ backgroundColor: '#f1f5f9' }}
+        <MapContainer
+            center={center}
+            zoom={14}
+            style={{ width: '100%', height: '100%' }}
+            preferCanvas={true}
+        >
+            <FlyTo center={center} />
+
+            {/* Clean light CartoDB basemap */}
+            <TileLayer
+                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
+                url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
+                subdomains="abcd"
+                maxZoom={20}
             />
-        </div>
+
+            {/* Road Edges */}
+            {data.edges.map((edge, i) => {
+                const isMajor = majorTypes.has(edge.roadType);
+                return (
+                    <Polyline
+                        key={i}
+                        positions={[[edge.source.lat, edge.source.lon], [edge.target.lat, edge.target.lon]]}
+                        pathOptions={{
+                            color: isMajor ? '#2563eb' : '#cbd5e1',
+                            weight: isMajor ? 3.5 : 1.5,
+                            opacity: isMajor ? 0.85 : 0.7,
+                        }}
+                    >
+                        <Popup>{edge.roadType}</Popup>
+                    </Polyline>
+                );
+            })}
+
+            {/* Intersection nodes */}
+            {intersections.map((node) => (
+                <CircleMarker
+                    key={node.id}
+                    center={[node.lat, node.lon]}
+                    radius={2}
+                    pathOptions={{ color: '#6366f1', fillColor: '#6366f1', fillOpacity: 0.5, weight: 0 }}
+                />
+            ))}
+
+            {/* POI markers with popups */}
+            {pois.map((node) => (
+                <CircleMarker
+                    key={node.id + '_poi'}
+                    center={[node.lat, node.lon]}
+                    radius={8}
+                    pathOptions={{
+                        color: '#fff',
+                        fillColor: poiColor(node.type),
+                        fillOpacity: 1,
+                        weight: 2,
+                    }}
+                >
+                    <Popup>
+                        <strong>{node.type.toUpperCase()}</strong><br />
+                        {node.tags?.name || 'No name available'}
+                    </Popup>
+                </CircleMarker>
+            ))}
+        </MapContainer>
     );
 };
 

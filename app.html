@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI-CityEngine | Digital Twin Simulation</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: #f1f5f9;
+      color: #0f172a;
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+    }
+
+    /* ── Sidebar ── */
+    #sidebar {
+      width: 340px;
+      min-width: 340px;
+      background: #fff;
+      border-right: 1px solid #e2e8f0;
+      display: flex;
+      flex-direction: column;
+      z-index: 100;
+      box-shadow: 2px 0 12px rgba(0,0,0,0.06);
+    }
+
+    #sidebar-header {
+      padding: 1.25rem 1.5rem;
+      border-bottom: 1px solid #e2e8f0;
+      background: #fff;
+    }
+
+    #sidebar-header h1 {
+      font-size: 1.1rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: #0f172a;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    #sidebar-header .subtitle {
+      font-size: 0.75rem;
+      color: #64748b;
+      margin-top: 0.2rem;
+    }
+
+    #sidebar-body {
+      padding: 1.25rem;
+      flex: 1;
+      overflow-y: auto;
+    }
+
+    label {
+      display: block;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #64748b;
+      margin-bottom: 0.4rem;
+    }
+
+    input[type="text"] {
+      width: 100%;
+      padding: 0.65rem 0.9rem;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 0.5rem;
+      font-size: 0.875rem;
+      font-family: inherit;
+      outline: none;
+      transition: border 0.2s;
+      margin-bottom: 0.75rem;
+    }
+
+    input[type="text"]:focus { border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
+
+    button#gen-btn {
+      width: 100%;
+      padding: 0.7rem;
+      background: #2563eb;
+      color: #fff;
+      border: none;
+      border-radius: 0.5rem;
+      font-size: 0.875rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.4rem;
+    }
+
+    button#gen-btn:hover { background: #1d4ed8; }
+    button#gen-btn:disabled { background: #93c5fd; cursor: not-allowed; }
+
+    #status-msg {
+      margin-top: 0.75rem;
+      font-size: 0.8rem;
+      color: #64748b;
+      min-height: 1.2rem;
+    }
+
+    #status-msg.error { color: #dc2626; }
+
+    /* Stats grid */
+    #stats {
+      margin-top: 1.25rem;
+      display: none;
+    }
+    #stats h2 {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #64748b;
+      margin-bottom: 0.6rem;
+      font-weight: 600;
+    }
+    .stats-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.6rem;
+    }
+    .stat-card {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 0.5rem;
+      padding: 0.75rem;
+    }
+    .stat-card .stat-label {
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #94a3b8;
+      font-weight: 600;
+    }
+    .stat-card .stat-val {
+      font-size: 1.35rem;
+      font-weight: 700;
+      color: #0f172a;
+      margin-top: 0.15rem;
+    }
+
+    /* Legend */
+    #legend {
+      margin-top: 1.25rem;
+      display: none;
+    }
+    #legend h2 {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #64748b;
+      margin-bottom: 0.6rem;
+      font-weight: 600;
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.8rem;
+      color: #334155;
+      margin-bottom: 0.4rem;
+    }
+    .legend-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      border: 2px solid #fff;
+      box-shadow: 0 0 0 1.5px rgba(0,0,0,0.15);
+      flex-shrink: 0;
+    }
+    .legend-line {
+      width: 24px;
+      height: 3px;
+      border-radius: 2px;
+      flex-shrink: 0;
+    }
+
+    /* Map */
+    #map {
+      flex: 1;
+      position: relative;
+    }
+
+    /* Custom popup style */
+    .leaflet-popup-content-wrapper {
+      border-radius: 0.5rem;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+      border: 1px solid #e2e8f0;
+      font-family: 'Inter', sans-serif;
+    }
+    .leaflet-popup-content { font-size: 0.8rem; color: #0f172a; }
+    .leaflet-popup-tip { background: #fff; }
+  </style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<div id="sidebar">
+  <div id="sidebar-header">
+    <h1>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>
+      AI-CityEngine
+    </h1>
+    <p class="subtitle">Digital Twin Simulation Platform</p>
+  </div>
+
+  <div id="sidebar-body">
+    <label for="city-input">City or Neighbourhood</label>
+    <input type="text" id="city-input" placeholder="e.g. Connaught Place, Delhi" value="Fort Kochi, Kerala" />
+    <button id="gen-btn" onclick="generate()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="5 12 12 5 19 12"/><line x1="12" y1="5" x2="12" y2="19"/></svg>
+      Generate Digital Twin
+    </button>
+    <div id="status-msg">Enter a small area and click Generate.</div>
+
+    <div id="stats">
+      <h2>Graph Stats</h2>
+      <div class="stats-grid">
+        <div class="stat-card"><div class="stat-label">Road Nodes</div><div class="stat-val" id="s-nodes">—</div></div>
+        <div class="stat-card"><div class="stat-label">Edges</div><div class="stat-val" id="s-edges">—</div></div>
+        <div class="stat-card"><div class="stat-label">Hospitals</div><div class="stat-val" id="s-hosp">—</div></div>
+        <div class="stat-card"><div class="stat-label">Emergency</div><div class="stat-val" id="s-emrg">—</div></div>
+      </div>
+    </div>
+
+    <div id="legend">
+      <h2>Legend</h2>
+      <div class="legend-item"><div class="legend-line" style="background:#2563eb"></div> Primary/Secondary Road</div>
+      <div class="legend-item"><div class="legend-line" style="background:#cbd5e1"></div> Residential Road</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#dc2626"></div> Hospital</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#0d9488"></div> Police / Fire Station</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#f59e0b"></div> School</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#6366f1"></div> Intersection</div>
+    </div>
+  </div>
+</div>
+
+<!-- MAP -->
+<div id="map"></div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+  // ── Map Init ──────────────────────────────────────────────────────────────
+  const map = L.map('map', { zoomControl: true, preferCanvas: true }).setView([20, 77], 5);
+
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+    attribution: '© OpenStreetMap contributors © CartoDB',
+    subdomains: 'abcd', maxZoom: 20
+  }).addTo(map);
+
+  let edgeLayer = null;
+  let nodeLayer = null;
+
+  // ── Icon helpers ──────────────────────────────────────────────────────────
+  function poiIcon(color) {
+    return L.divIcon({
+      className: '',
+      html: `<div style="
+        width:16px;height:16px;
+        background:${color};
+        border:2.5px solid #fff;
+        border-radius:50%;
+        box-shadow:0 1px 4px rgba(0,0,0,0.28);
+      "></div>`,
+      iconSize: [16,16],
+      iconAnchor: [8,8]
+    });
+  }
+
+  // ── Nominatim geocode ─────────────────────────────────────────────────────
+  async function geocode(query) {
+    const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1`;
+    const r = await fetch(url, { headers: { 'User-Agent': 'AI-CityEngine/1.0' } });
+    if (!r.ok) throw new Error('Geocoding failed');
+    const data = await r.json();
+    if (!data.length) throw new Error(`"${query}" not found`);
+    const { lat, lon, boundingbox } = data[0];
+    // boundingbox = [minLat, maxLat, minLon, maxLon]
+    return {
+      lat: +lat, lon: +lon,
+      bbox: { south: +boundingbox[0], north: +boundingbox[1], west: +boundingbox[2], east: +boundingbox[3] }
+    };
+  }
+
+  // ── Overpass query ────────────────────────────────────────────────────────
+  async function fetchOSM(bbox) {
+    const b = `${bbox.south},${bbox.west},${bbox.north},${bbox.east}`;
+    const q = `[out:json][timeout:30];
+(
+  way["highway"]["highway"!~"footway|path|cycleway|pedestrian|steps|service"](${b});
+  node["amenity"~"hospital|police|fire_station|school"](${b});
+);
+out body; >; out skel qt;`;
+
+    const r = await fetch('https://overpass-api.de/api/interpreter', {
+      method: 'POST',
+      body: q
+    });
+    if (!r.ok) throw new Error(`Overpass Error ${r.status}`);
+    return r.json();
+  }
+
+  // ── Process OSM data → graph ──────────────────────────────────────────────
+  function processOSM(raw) {
+    const nodeMap = {};
+    const pois = [];
+    const edges = [];
+    let hospitals = 0, emergency = 0;
+
+    // Pass 1: all nodes
+    raw.elements.forEach(el => {
+      if (el.type === 'node') {
+        nodeMap[el.id] = { id: el.id, lat: el.lat, lon: el.lon, type: 'intersection', tags: el.tags || {} };
+        if (el.tags) {
+          const a = el.tags.amenity;
+          if (a === 'hospital') { nodeMap[el.id].type = 'hospital'; hospitals++; pois.push(nodeMap[el.id]); }
+          else if (a === 'police' || a === 'fire_station') { nodeMap[el.id].type = 'emergency'; emergency++; pois.push(nodeMap[el.id]); }
+          else if (a === 'school') { nodeMap[el.id].type = 'school'; pois.push(nodeMap[el.id]); }
+        }
+      }
+    });
+
+    // Pass 2: ways → edges
+    const roadNodes = new Set();
+    raw.elements.forEach(el => {
+      if (el.type === 'way' && el.nodes && el.nodes.length > 1) {
+        const hw = el.tags?.highway || 'unknown';
+        for (let i = 0; i < el.nodes.length - 1; i++) {
+          const s = nodeMap[el.nodes[i]], t = nodeMap[el.nodes[i + 1]];
+          if (s && t) {
+            edges.push({ source: s, target: t, roadType: hw });
+            roadNodes.add(s.id);
+            roadNodes.add(t.id);
+          }
+        }
+      }
+    });
+
+    const intersections = [...roadNodes].map(id => nodeMap[id]).filter(Boolean);
+    return { intersections, pois, edges, hospitals, emergency };
+  }
+
+  // ── Render on Leaflet ─────────────────────────────────────────────────────
+  function render(graph, center) {
+    // Clear old layers
+    if (edgeLayer) map.removeLayer(edgeLayer);
+    if (nodeLayer) map.removeLayer(nodeLayer);
+
+    const majorRoads = ['motorway','trunk','primary','secondary'];
+
+    // Roads as polylines
+    const polylines = graph.edges.map(e => {
+      const isMajor = majorRoads.includes(e.roadType);
+      return L.polyline(
+        [[e.source.lat, e.source.lon], [e.target.lat, e.target.lon]],
+        { color: isMajor ? '#2563eb' : '#cbd5e1', weight: isMajor ? 3.5 : 1.5, opacity: isMajor ? 0.85 : 0.7 }
+      ).bindPopup(`<b>Road:</b> ${e.roadType}`);
+    });
+
+    edgeLayer = L.layerGroup(polylines).addTo(map);
+
+    // Intersection nodes (small circles)
+    const dots = graph.intersections.slice(0, 4000).map(n =>
+      L.circleMarker([n.lat, n.lon], { radius: 2, color: '#6366f1', fillColor: '#6366f1', fillOpacity: 0.5, weight: 0 })
+        .bindPopup(`<b>Intersection</b><br/>ID: ${n.id}`)
+    );
+
+    // POI icons (larger, distinct colours)
+    const poiColors = { hospital: '#dc2626', emergency: '#0d9488', school: '#f59e0b' };
+    const poiMarkers = graph.pois.map(n => {
+      const color = poiColors[n.type] || '#64748b';
+      return L.marker([n.lat, n.lon], { icon: poiIcon(color) })
+        .bindPopup(`<b>${n.type.toUpperCase()}</b><br/>${n.tags?.name || 'No name'}`);
+    });
+
+    nodeLayer = L.layerGroup([...dots, ...poiMarkers]).addTo(map);
+
+    // Fly to area
+    map.flyTo([center.lat, center.lon], 15, { duration: 1.2 });
+  }
+
+  // ── Main generate ─────────────────────────────────────────────────────────
+  async function generate() {
+    const query = document.getElementById('city-input').value.trim();
+    if (!query) return;
+
+    const btn = document.getElementById('gen-btn');
+    const statusEl = document.getElementById('status-msg');
+    btn.disabled = true;
+    statusEl.className = '';
+    statusEl.textContent = '🗺  Geocoding location…';
+
+    try {
+      const geo = await geocode(query);
+      statusEl.textContent = '📡  Fetching OpenStreetMap data…';
+
+      const raw = await fetchOSM(geo.bbox);
+      statusEl.textContent = '⚙️  Processing graph…';
+
+      const graph = processOSM(raw);
+      statusEl.textContent = '🎨  Rendering digital twin…';
+
+      render(graph, { lat: geo.lat, lon: geo.lon });
+
+      // Stats
+      document.getElementById('s-nodes').textContent = graph.intersections.length.toLocaleString();
+      document.getElementById('s-edges').textContent = graph.edges.length.toLocaleString();
+      document.getElementById('s-hosp').textContent = graph.hospitals;
+      document.getElementById('s-emrg').textContent = graph.emergency;
+
+      document.getElementById('stats').style.display = 'block';
+      document.getElementById('legend').style.display = 'block';
+      statusEl.textContent = `✅  Twin generated for "${query}"`;
+
+    } catch (err) {
+      statusEl.className = 'error';
+      statusEl.textContent = '❌  ' + err.message;
+      console.error(err);
+    } finally {
+      btn.disabled = false;
+    }
+  }
+
+  // Auto-generate on load for a small default area
+  window.addEventListener('load', () => setTimeout(generate, 600));
+</script>
+</body>
+</html>

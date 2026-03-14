@@ -109,6 +109,8 @@ This document will be reviewed by:
 === CITY CONTEXT ===
 ${JSON.stringify(context, null, 2)}
 
+CRITICAL INSTRUCTION: Analyze the "abnormalConditions" block closely. If there are high winds, earthquakes, fire risks, grid overloads, or any other hazards listed, explicitly mention how they compound the primary crisis in the Threat Assessment, and mitigate for them in the Action Plan.
+
 === RESPONSE FORMAT ===
 Write the action plan in clean markdown. Use this exact structure:
 

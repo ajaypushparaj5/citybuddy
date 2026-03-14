@@ -4,8 +4,8 @@ export class CityMonitorAgent extends BaseAgent {
     constructor() {
         super('CityMonitorAgent', 'Monitors real-time city infrastructure and sensor anomalies.');
         this.lastReasoningTime = 0;
-        this.reasoningCooldown = 15000; // 15s min between different anomalies
-        this.refreshCooldown = 60000; // 1 min refresh if anomalies persist but are unchanged
+        this.reasoningCooldown = 30000; // 30s min between different anomalies (increased to save tokens)
+        this.refreshCooldown = 120000; // 2 min refresh if anomalies persist but are unchanged
         this.lastAnomalyState = null;
     }
 
@@ -56,7 +56,7 @@ export class CityMonitorAgent extends BaseAgent {
             sensorAlerts: significantSensors
         });
 
-        const alerts = await this.promptGemini(systemPrompt, userPrompt);
+        const alerts = await this.promptAI(systemPrompt, userPrompt);
         
         if (alerts && Array.isArray(alerts)) {
             alerts.forEach(alert => this.emitAlert(alert));

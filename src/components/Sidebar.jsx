@@ -1,21 +1,22 @@
 import React, { useState } from 'react';
-
-const Sidebar = ({ 
-    onSubmit, 
-    isLoading, 
-    error, 
-    cityData, 
-    showElevation, 
-    setShowElevation, 
-    showBuildings, 
+const Sidebar = ({
+    onSubmit,
+    isLoading,
+    error,
+    cityData,
+    showElevation,
+    setShowElevation,
+    showBuildings,
     setShowBuildings,
     activeAlerts = [],
     sensorData = null,
     selectedArea = null,
     areaParams = { rainfall: 0, trafficDensity: 0 },
-    setAreaParams
+    setAreaParams,
+    agentStates = []
 }) => {
     const [cityName, setCityName] = useState('New York, NY');
+    const [activeAgentTab, setActiveAgentTab] = useState(null);
 
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -67,20 +68,20 @@ const Sidebar = ({
                     <div style={{ marginTop: '1.5rem', padding: '1rem', background: '#eff6ff', borderRadius: '0.6rem', border: '1px solid #bfdbfe' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
                             <h2 style={{ fontSize: '0.875rem', fontWeight: 700, color: '#1e40af', margin: 0 }}>📍 Area Simulation</h2>
-                            <button 
+                            <button
                                 onClick={() => { setAreaParams({ rainfall: 0, trafficDensity: 0 }); /* parent handles closing via state logic or we just let it be */ }}
                                 style={{ background: 'none', border: 'none', color: '#60a5fa', fontSize: '0.75rem', cursor: 'pointer' }}
                             >Reset</button>
                         </div>
-                        
+
                         <div style={{ marginBottom: '1rem' }}>
                             <label style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.7rem', color: '#1e40af', fontWeight: 600, marginBottom: '0.25rem' }}>
                                 Local Rainfall <span>{(areaParams.rainfall * 100).toFixed(0)}%</span>
                             </label>
-                            <input 
-                                type="range" min="0" max="1" step="0.05" 
-                                value={areaParams.rainfall} 
-                                onChange={(e) => setAreaParams({...areaParams, rainfall: parseFloat(e.target.value)})}
+                            <input
+                                type="range" min="0" max="1" step="0.05"
+                                value={areaParams.rainfall}
+                                onChange={(e) => setAreaParams({ ...areaParams, rainfall: parseFloat(e.target.value) })}
                                 style={{ width: '100%', accentColor: '#3b82f6', height: '4px' }}
                             />
                         </div>
@@ -89,10 +90,10 @@ const Sidebar = ({
                             <label style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.7rem', color: '#1e40af', fontWeight: 600, marginBottom: '0.25rem' }}>
                                 Local Traffic Density <span>{(areaParams.trafficDensity * 100).toFixed(0)}%</span>
                             </label>
-                            <input 
-                                type="range" min="0" max="1" step="0.05" 
-                                value={areaParams.trafficDensity} 
-                                onChange={(e) => setAreaParams({...areaParams, trafficDensity: parseFloat(e.target.value)})}
+                            <input
+                                type="range" min="0" max="1" step="0.05"
+                                value={areaParams.trafficDensity}
+                                onChange={(e) => setAreaParams({ ...areaParams, trafficDensity: parseFloat(e.target.value) })}
                                 style={{ width: '100%', accentColor: '#3b82f6', height: '4px' }}
                             />
                         </div>
@@ -131,11 +132,96 @@ const Sidebar = ({
                 {cityData && (
                     <>
                         <div style={{ marginTop: '2rem' }}>
+                            <h2 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '1rem', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                                <span>🤖 Multi-Agent Swarm</span>
+                                <span style={{ fontSize: '0.65rem', color: '#10b981', background: '#ecfdf5', padding: '2px 8px', borderRadius: '12px' }}>{agentStates.length} Active</span>
+                            </h2>
+
+                            {/* Agent Swarm Overview Dashboard */}
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '0.5rem', marginBottom: '1rem' }}>
+                                {agentStates.map(agent => (
+                                    <div
+                                        key={agent.name}
+                                        onClick={() => setActiveAgentTab(activeAgentTab === agent.name ? null : agent.name)}
+                                        style={{
+                                            background: activeAgentTab === agent.name ? 'var(--accent-blue-subtle)' : '#f8fafc',
+                                            border: `1px solid ${activeAgentTab === agent.name ? 'var(--accent-blue)' : 'var(--border-subtle)'}`,
+                                            padding: '0.75rem',
+                                            borderRadius: '0.5rem',
+                                            cursor: 'pointer',
+                                            transition: 'all 0.2s',
+                                            position: 'relative'
+                                        }}
+                                    >
+                                        <div style={{ fontSize: '0.65rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '4px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{agent.name.replace('Agent', '')}</div>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                            <span style={{
+                                                width: '6px',
+                                                height: '6px',
+                                                borderRadius: '50%',
+                                                backgroundColor: agent.status === 'processing' ? '#3b82f6' : '#10b981',
+                                                animation: agent.status === 'processing' ? 'pulse 1s infinite' : 'none'
+                                            }}></span>
+                                            <span style={{ fontSize: '0.6rem', color: 'var(--text-secondary)', textTransform: 'capitalize' }}>{agent.status}</span>
+                                        </div>
+                                        {agent.alerts.length > 0 && (
+                                            <span style={{ position: 'absolute', top: -5, right: -5, background: '#ef4444', color: 'white', fontSize: '0.5rem', minWidth: '14px', height: '14px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800 }}>{agent.alerts.length}</span>
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+
+                            {/* Individual Agent Deep Dive Dashboard */}
+                            {activeAgentTab && (
+                                <div style={{ background: '#1e293b', borderRadius: '0.75rem', padding: '1rem', color: 'white', marginBottom: '1.5rem', boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.4)' }}>
+                                    {agentStates.filter(a => a.name === activeAgentTab).map(agent => (
+                                        <div key={agent.name}>
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '0.75rem' }}>
+                                                <div>
+                                                    <h3 style={{ fontSize: '0.9rem', color: '#60a5fa', margin: 0 }}>{agent.name}</h3>
+                                                    <p style={{ fontSize: '0.65rem', color: '#94a3b8', margin: '2px 0 0' }}>{agent.description}</p>
+                                                </div>
+                                                <button onClick={() => setActiveAgentTab(null)} style={{ background: 'rgba(255,255,255,0.1)', border: 'none', color: 'white', cursor: 'pointer', borderRadius: '4px', padding: '2px 6px' }}>×</button>
+                                            </div>
+
+                                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.5rem', marginBottom: '1rem' }}>
+                                                <div style={{ background: 'rgba(0,0,0,0.2)', padding: '0.5rem', borderRadius: '0.4rem', textAlign: 'center' }}>
+                                                    <div style={{ fontSize: '0.55rem', color: '#94a3b8' }}>Ticks</div>
+                                                    <div style={{ fontSize: '0.8rem', fontWeight: 700 }}>{agent.metrics?.totalTicks || 0}</div>
+                                                </div>
+                                                <div style={{ background: 'rgba(0,0,0,0.2)', padding: '0.5rem', borderRadius: '0.4rem', textAlign: 'center' }}>
+                                                    <div style={{ fontSize: '0.55rem', color: '#94a3b8' }}>AI Calls</div>
+                                                    <div style={{ fontSize: '0.8rem', fontWeight: 700 }}>{agent.metrics?.aiCalls || 0}</div>
+                                                </div>
+                                                <div style={{ background: 'rgba(0,0,0,0.2)', padding: '0.5rem', borderRadius: '0.4rem', textAlign: 'center' }}>
+                                                    <div style={{ fontSize: '0.55rem', color: '#94a3b8' }}>Latency</div>
+                                                    <div style={{ fontSize: '0.8rem', fontWeight: 700 }}>{agent.metrics?.lastRunMs || 0}ms</div>
+                                                </div>
+                                            </div>
+
+                                            <div style={{ fontSize: '0.65rem', fontWeight: 700, color: '#94a3b8', marginBottom: '0.5rem', textTransform: 'uppercase' }}>Recent Alerts</div>
+                                            <div style={{ maxHeight: '120px', overflowY: 'auto' }}>
+                                                {agent.alerts.length === 0 ? (
+                                                    <div style={{ fontSize: '0.7rem', color: '#475569', textAlign: 'center', padding: '1rem' }}>No recent alerts</div>
+                                                ) : (
+                                                    agent.alerts.map(alert => (
+                                                        <div key={alert.id} style={{ fontSize: '0.7rem', background: 'rgba(255,255,255,0.05)', padding: '6px', borderRadius: '4px', marginBottom: '4px', borderLeft: '2px solid #60a5fa' }}>
+                                                            <div style={{ color: '#cbd5e1', marginBottom: '2px' }}>{alert.message}</div>
+                                                            <div style={{ color: '#64748b', fontSize: '0.6rem' }}>{alert.timestamp} • {alert.severity}</div>
+                                                        </div>
+                                                    ))
+                                                )}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+
                             <h2 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '1rem', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                                 <span style={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: '#10b981', display: 'inline-block', boxShadow: '0 0 8px #10b981' }}></span>
-                                Live Monitoring
+                                Global Event Feed
                             </h2>
-                            
+
                             {sensorData && (
                                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '1rem' }}>
                                     <div className="status-card" style={{ background: '#f8fafc' }}>
@@ -151,30 +237,30 @@ const Sidebar = ({
                                 </div>
                             )}
 
-                            <div style={{ 
-                                background: '#0f172a', 
-                                borderRadius: '0.5rem', 
-                                padding: '0.75rem', 
-                                minHeight: '150px', 
-                                maxHeight: '300px', 
+                            <div style={{
+                                background: '#0f172a',
+                                borderRadius: '0.5rem',
+                                padding: '0.75rem',
+                                minHeight: '150px',
+                                maxHeight: '300px',
                                 overflowY: 'auto',
                                 boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.2)'
                             }}>
-                                <div style={{ fontSize: '0.7rem', color: '#64748b', marginBottom: '0.5rem', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 700 }}>Agent Alert Ticker</div>
+                                <div style={{ fontSize: '0.7rem', color: '#64748b', marginBottom: '0.5rem', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 700 }}>System-Wide Alert Ticker</div>
                                 {activeAlerts.length === 0 ? (
                                     <div style={{ color: '#475569', fontSize: '0.75rem', fontStyle: 'italic', textAlign: 'center', marginTop: '2rem' }}>Scanning city data...</div>
                                 ) : (
                                     activeAlerts.map(alert => (
-                                        <div key={alert.id} style={{ 
-                                            marginBottom: '0.5rem', 
-                                            padding: '0.5rem', 
-                                            borderRadius: '0.3rem', 
+                                        <div key={alert.id} style={{
+                                            marginBottom: '0.5rem',
+                                            padding: '0.5rem',
+                                            borderRadius: '0.3rem',
                                             background: alert.severity === 'high' ? '#450a0a' : '#1e293b',
                                             borderLeft: `3px solid ${alert.severity === 'high' ? '#ef4444' : '#3b82f6'}`,
                                             animation: 'slideIn 0.3s ease-out'
                                         }}>
                                             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2px' }}>
-                                                <span style={{ fontSize: '0.65rem', fontWeight: 800, color: alert.severity === 'high' ? '#fca5a5' : '#93c5fd', textTransform: 'uppercase' }}>{alert.type}</span>
+                                                <span style={{ fontSize: '0.65rem', fontWeight: 800, color: alert.severity === 'high' ? '#fca5a5' : '#93c5fd', textTransform: 'uppercase' }}>{alert.agent}</span>
                                                 <span style={{ fontSize: '0.6rem', color: '#64748b' }}>{alert.timestamp}</span>
                                             </div>
                                             <div style={{ fontSize: '0.75rem', color: '#f1f5f9', lineHeight: 1.3 }}>{alert.message}</div>

@@ -4,7 +4,7 @@ import Sidebar from '../components/Sidebar';
 import { fetchCityData } from '../services/osmService';
 import { fetchElevationGrid } from '../services/elevationService';
 import { dataIntegrationService } from '../services/dataIntegrationService';
-import { CityMonitorAgent } from '../agents/CityMonitorAgent';
+import { agentManager } from '../agents/CityAgentManager';
 
 function DigitalTwin() {
   const [cityData, setCityData] = useState(null);
@@ -16,10 +16,9 @@ function DigitalTwin() {
   const [activeAlerts, setActiveAlerts] = useState([]);
   const [sensorData, setSensorData] = useState(null);
   const [selectedArea, setSelectedArea] = useState(null);
-  const [areaParams, setAreaParams] = useState({ rainfall: 0, trafficDensity: 0 });
 
-  // Initialize Agent
-  const [agent] = useState(() => new CityMonitorAgent());
+  const [areaParams, setAreaParams] = useState({ rainfall: 0, trafficDensity: 0 });
+  const [agentStates, setAgentStates] = useState([]);
 
   const handleCitySubmit = async (cityName) => {
     setIsLoading(true);
@@ -46,8 +45,8 @@ function DigitalTwin() {
   // Start data stream when city data is loaded
   React.useEffect(() => {
     if (cityData) {
-      // Initialize agent with data and alert handler
-      agent.init(cityData, (alert) => {
+      // Initialize agent manager with data and alert handler
+      agentManager.init(cityData, (alert) => {
         setActiveAlerts(prev => [alert, ...prev].slice(0, 50));
       });
 
@@ -57,7 +56,8 @@ function DigitalTwin() {
       // Subscribe to updates
       const unsubscribe = dataIntegrationService.subscribe((tick) => {
         setSensorData(tick);
-        agent.processTick(tick);
+        agentManager.processTick(tick);
+        setAgentStates(agentManager.getAgentStates());
       });
 
       return () => {
@@ -65,7 +65,7 @@ function DigitalTwin() {
         dataIntegrationService.stop();
       };
     }
-  }, [cityData, agent]);
+  }, [cityData]);
 
   // Sync area parameters to data service
   React.useEffect(() => {
@@ -93,6 +93,7 @@ function DigitalTwin() {
         selectedArea={selectedArea}
         areaParams={areaParams}
         setAreaParams={setAreaParams}
+        agentStates={agentStates}
       />
 
       <div className="map-container" style={{ flex: 1, position: 'relative', height: '100%' }}>

@@ -1,5 +1,6 @@
 // OSM Overpass API Service
 // Fetches free map data from OpenStreetMap
+import { localCache } from './localCacheService';
 
 // Helper to reliably get a bounding box from a city name via Nominatim
 async function getBoundingBox(cityName) {
@@ -28,7 +29,18 @@ async function getBoundingBox(cityName) {
 }
 
 export async function fetchCityData(cityName) {
+    const normalizedName = cityName.toLowerCase().trim();
+
     try {
+        // 0. Check Local Cache first
+        const cacheData = await localCache.get(normalizedName);
+        if (cacheData?.graph_data) {
+            console.log(`[Cache Hit] Serving city data for '${cityName}' from Local Cache.`);
+            return cacheData.graph_data;
+        }
+
+        console.log(`[Cache Miss] Fetching fresh data for '${cityName}' from OpenStreetMap...`);
+
         // 1. Get bounding box coordinates from city name
         const { bbox, lat, lon } = await getBoundingBox(cityName);
         // Overpass bounding box is: (south, west, north, east)
@@ -48,6 +60,9 @@ export async function fetchCityData(cityName) {
         node["amenity"="police"](${bboxString});
         node["amenity"="fire_station"](${bboxString});
         node["amenity"="school"](${bboxString});
+
+        // Extract building footprints
+        way["building"](${bboxString});
       );
       out body;
       >;
@@ -68,7 +83,13 @@ export async function fetchCityData(cityName) {
         }
 
         const json = await response.json();
-        return processOsmData(json, lat, lon);
+        const processedData = processOsmData(json, lat, lon, bbox);
+
+        // Save to cache asynchronously 
+        localCache.set(normalizedName, { graph_data: processedData })
+            .catch(err => console.error("Error writing to local cache:", err));
+
+        return processedData;
 
     } catch (error) {
         console.error("OSM Error:", error);
@@ -76,11 +97,12 @@ export async function fetchCityData(cityName) {
     }
 }
 
-function processOsmData(rawOsmData, centerLat, centerLon) {
+function processOsmData(rawOsmData, centerLat, centerLon, bbox) {
     const nodesMap = new Map();
     const rawNodes = [];
     const poiNodes = [];   // ← collect POIs separately so they're never lost
     const edges = [];
+    const buildings = [];  // Array of arrays of [lat, lon] coordinates
 
     const infrastructureStats = {
         hospitals: 0,
@@ -117,10 +139,22 @@ function processOsmData(rawOsmData, centerLat, centerLon) {
         }
     });
 
-    // 2. Pass 2: Parse ways/roads into edges.
+    // 2. Pass 2: Parse ways (roads into edges, buildings into polygons).
     rawOsmData.elements.forEach(el => {
         if (el.type === 'way' && el.nodes && el.nodes.length > 1) {
-            // Connect each adjacent node in the way as an edge.
+
+            // Check if it's a building
+            if (el.tags && el.tags.building) {
+                const footprint = [];
+                for (let i = 0; i < el.nodes.length; i++) {
+                    const node = nodesMap.get(el.nodes[i]);
+                    if (node) footprint.push([node.lat, node.lon]);
+                }
+                if (footprint.length > 2) buildings.push(footprint);
+                return; // done with this way
+            }
+
+            // Otherwise, treat as road/edge
             for (let i = 0; i < el.nodes.length - 1; i++) {
                 const sourceId = el.nodes[i];
                 const targetId = el.nodes[i + 1];
@@ -157,8 +191,11 @@ function processOsmData(rawOsmData, centerLat, centerLon) {
 
     return {
         center: [centerLon, centerLat],
+        // leafletBounds format: [[south, west], [north, east]]
+        bbox: [[bbox[0], bbox[1]], [bbox[2], bbox[3]]],
         nodes: uniqueNodes,
         edges: edges,
+        buildings: buildings,
         infrastructure: infrastructureStats,
         rawOsm: null
     };

@@ -38,6 +38,8 @@ export default function CitizenDashboard() {
     ]);
     const [isChatLoading, setIsChatLoading] = useState(false);
 
+  
+
     const fetchNews = async (city) => {
         try {
             const apiKey = import.meta.env.VITE_NEWS_API_KEY;
@@ -205,325 +207,369 @@ export default function CitizenDashboard() {
     };
 
     if (!cityData) {
-        return (
-            <div style={{ padding: '4rem 2rem', maxWidth: '600px', margin: '10vh auto', textAlign: 'center', fontFamily: 'Inter, sans-serif' }}>
-                <ShieldAlert size={64} color="#3b82f6" style={{ margin: '0 auto 1.5rem' }} />
-                <h1 style={{ fontSize: '2.5rem', fontWeight: 800, color: '#0f172a', margin: 0 }}>Citizen Portal</h1>
-                <p style={{ color: '#64748b', fontSize: '1.1rem', marginTop: '0.5rem', marginBottom: '2rem' }}>
-                    Select a city to view real-time safety, transit, and traffic updates powered by the AI Digital Twin.
-                </p>
-                <form onSubmit={handleCitySearch} style={{ display: 'flex', gap: '8px' }}>
-                    <input
-                        type="text"
-                        value={searchCity}
-                        onChange={(e) => setSearchCity(e.target.value)}
-                        placeholder="Enter your city (e.g. San Francisco)"
-                        style={{ flex: 1, padding: '12px 16px', borderRadius: '12px', border: '1px solid #cbd5e1', fontSize: '1rem' }}
-                    />
-                    <button
-                        type="submit"
-                        disabled={isLoadingCity}
-                        style={{
-                            background: '#3b82f6', color: 'white', padding: '12px 24px', borderRadius: '12px',
-                            border: 'none', fontWeight: 600, cursor: isLoadingCity ? 'not-allowed' : 'pointer',
-                            display: 'flex', alignItems: 'center', gap: '8px'
-                        }}
-                    >
-                        {isLoadingCity ? <Loader className="spin" size={20} /> : <Search size={20} />}
-                        Monitor
-                    </button>
-                </form>
-                {cityError && <p style={{ color: '#ef4444', marginTop: '1rem', fontWeight: 500 }}>{cityError}</p>}
-                <style dangerouslySetInnerHTML={{
-                    __html: `
-                    @keyframes spin { 100% { transform: rotate(360deg); } }
-                    .spin { animation: spin 1s linear infinite; }
-                 `}} />
-            </div>
-        );
-    }
+  return (
+    <div className="min-h-screen bg-[#0a0a0f] flex items-center justify-center px-6 font-inter">
+      <div className="w-full max-w-xl text-center glass-soft bg-white/5 border border-white/10 rounded-3xl p-12 backdrop-blur-xl">
+        
+        <ShieldAlert size={64} className="mx-auto mb-6 text-blue-400" />
 
-    return (
-        <div style={{ padding: '2rem', maxWidth: '1200px', margin: '0 auto', fontFamily: 'Inter, sans-serif' }}>
+        <h1 className="text-4xl lg:text-5xl font-bold text-white tracking-tight">
+          Citizen Portal
+        </h1>
 
-            {/* Header Area */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem', marginTop: '3rem' }}>
-                <div>
-                    <h1 style={{ fontSize: '2.5rem', fontWeight: 800, color: '#0f172a', margin: 0 }}>Citizen Portal: {cityData.name || searchCity}</h1>
-                    <p style={{ color: '#64748b', fontSize: '1.1rem', marginTop: '0.5rem' }}>Real-time public information and safety alerts for your city.</p>
-                </div>
-                <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'center' }}>
-                    <button
-                        onClick={() => setIsReportModalOpen(true)}
-                        style={{ background: '#4f46e5', color: 'white', border: 'none', padding: '1rem 1.5rem', borderRadius: '1rem', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem', boxShadow: '0 4px 6px -1px rgba(79, 70, 229, 0.2)' }}
-                    >
-                        <Send size={20} /> Report Incident
-                    </button>
-                    <div style={{ textAlign: 'right', background: cityHealth.status === 'Stable' ? '#ecfdf5' : '#fff1f2', padding: '1rem', borderRadius: '1rem', border: `1px solid ${cityHealth.status === 'Stable' ? '#6ee7b7' : '#fca5a5'}` }}>
-                        <div style={{ fontSize: '0.8rem', color: '#64748b', textTransform: 'uppercase', fontWeight: 700 }}>City Health</div>
-                        <div style={{ fontSize: '2rem', fontWeight: 900, color: cityHealth.status === 'Stable' ? '#059669' : '#e11d48' }}>
-                            {cityHealth.score}<span style={{ fontSize: '1rem', color: '#94a3b8' }}>/100</span>
-                        </div>
-                        <div style={{ fontSize: '0.9rem', color: cityHealth.status === 'Stable' ? '#10b981' : '#f43f5e', fontWeight: 600 }}>{cityHealth.status}</div>
-                    </div>
-                </div>
-            </div>
+        <p className="text-white/70 text-base md:text-lg mt-3 mb-10 leading-relaxed">
+          Select a city to view real-time safety, transit, and traffic updates
+          powered by the AI Digital Twin.
+        </p>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 2fr) minmax(0, 1fr)', gap: '1.5rem' }}>
+        <form onSubmit={handleCitySearch} className="flex gap-3">
+          <input
+            type="text"
+            value={searchCity}
+            onChange={(e) => setSearchCity(e.target.value)}
+            placeholder="Enter your city (e.g. San Francisco)"
+            className="flex-1 px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-white/40 outline-none focus:border-white/20 transition-all"
+          />
 
-                {/* Main Content Column */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-
-                    {/* Live Crisis Alerts (Linked to AI Swarm) */}
-                    <section style={{ background: '#fff', padding: '1.5rem', borderRadius: '1rem', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)', borderTop: '4px solid #ef4444' }}>
-                        <h2 style={{ fontSize: '1.2rem', fontWeight: 700, color: '#0f172a', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                            <ShieldAlert color="#ef4444" /> Live AI Crisis Alerts
-                        </h2>
-                        {publicAlerts.length === 0 ? (
-                            <div style={{ textAlign: 'center', padding: '2rem', color: '#94a3b8', background: '#f8fafc', borderRadius: '0.5rem' }}>
-                                <ShieldAlert size={32} style={{ opacity: 0.2, margin: '0 auto 0.5rem' }} />
-                                No active crisis alerts right now.
-                            </div>
-                        ) : (
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                                {publicAlerts.map(alert => (
-                                    <div key={alert.id} style={{ padding: '1rem', background: '#fef2f2', borderLeft: '4px solid #ef4444', borderRadius: '0.5rem' }}>
-                                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.25rem' }}>
-                                            <span style={{ fontWeight: 700, color: '#991b1b', textTransform: 'uppercase', fontSize: '0.8rem' }}>⚠️ {alert.type} Warning</span>
-                                            <span style={{ fontSize: '0.75rem', color: '#b91c1c' }}>{alert.timestamp}</span>
-                                        </div>
-                                        <p style={{ margin: 0, color: '#7f1d1d', fontSize: '0.95rem' }}>{alert.message}</p>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-                    </section>
-
-                    {/* Published Action Plan */}
-                    {publishedPlan && (
-                        <section style={{ background: '#fff', padding: '1.5rem', borderRadius: '1rem', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)', borderTop: '4px solid #10b981' }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
-                                <h2 style={{ fontSize: '1.2rem', fontWeight: 700, color: '#0f172a', margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                    <ShieldAlert color="#10b981" /> Official Authority Action Plan
-                                </h2>
-                                <span style={{ fontSize: '0.65rem', background: '#dcfce7', color: '#166534', padding: '4px 8px', borderRadius: '4px', fontWeight: 700 }}>
-                                    PUBLISHED: {new Date(publishedPlan.timestamp).toLocaleTimeString()}
-                                </span>
-                            </div>
-                            <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '0.5rem', padding: '1rem' }}>
-                                <div style={{ marginBottom: '0.75rem', paddingBottom: '0.5rem', borderBottom: '1px solid #cbd5e1' }}>
-                                    <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#ef4444', textTransform: 'uppercase' }}>
-                                        Response To: {publishedPlan.alertType?.replace(/_/g, ' ')}
-                                    </div>
-                                    <div style={{ fontSize: '0.85rem', color: '#475569', marginTop: '0.25rem' }}>
-                                        {publishedPlan.alertMessage}
-                                    </div>
-                                </div>
-                                <div dangerouslySetInnerHTML={{ __html: renderMarkdown(publishedPlan.plan) }} style={{ fontSize: '0.85rem', color: '#334155' }} />
-                            </div>
-                        </section>
-                    )}
-
-                    {/* AI Chatbot Interface */}
-                    <section style={{ background: '#fff', padding: '1.5rem', borderRadius: '1rem', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)', borderTop: '4px solid #8b5cf6' }}>
-                        <h2 style={{ fontSize: '1.2rem', fontWeight: 700, color: '#0f172a', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                            <Search color="#8b5cf6" /> Ask CityBuddy
-                        </h2>
-                        <div style={{ background: '#f8fafc', borderRadius: '0.75rem', border: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column', height: '350px' }}>
-
-                            {/* Chat History */}
-                            <div style={{ flex: 1, padding: '1rem', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                                {chatHistory.map((msg, idx) => (
-                                    <div key={idx} style={{ display: 'flex', justifyContent: msg.role === 'user' ? 'flex-end' : 'flex-start' }}>
-                                        <div style={{
-                                            maxWidth: '80%', padding: '0.75rem 1rem', borderRadius: '1rem',
-                                            background: msg.role === 'user' ? '#4f46e5' : '#e2e8f0',
-                                            color: msg.role === 'user' ? 'white' : '#0f172a',
-                                            fontSize: '0.9rem', lineHeight: 1.4,
-                                            borderBottomRightRadius: msg.role === 'user' ? 0 : '1rem',
-                                            borderBottomLeftRadius: msg.role === 'user' ? '1rem' : 0
-                                        }}>
-                                            {msg.text}
-                                        </div>
-                                    </div>
-                                ))}
-                                {isChatLoading && (
-                                    <div style={{ display: 'flex', justifyContent: 'flex-start' }}>
-                                        <div style={{ background: '#e2e8f0', padding: '0.75rem 1rem', borderRadius: '1rem', borderBottomLeftRadius: 0 }}>
-                                            <Loader className="spin" size={16} color="#64748b" />
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-
-                            {/* Chat Input */}
-                            <div style={{ padding: '0.75rem', borderTop: '1px solid #e2e8f0', background: 'white', borderBottomLeftRadius: '0.75rem', borderBottomRightRadius: '0.75rem' }}>
-                                <form onSubmit={handleChatSubmit} style={{ display: 'flex', gap: '0.5rem' }}>
-                                    <input
-                                        type="text"
-                                        value={chatQuery}
-                                        onChange={(e) => setChatQuery(e.target.value)}
-                                        placeholder="Ask about traffic, weather, or safe zones..."
-                                        disabled={isChatLoading}
-                                        style={{ flex: 1, padding: '0.75rem 1rem', borderRadius: '2rem', border: '1px solid #cbd5e1', fontSize: '0.9rem', outline: 'none' }}
-                                    />
-                                    <button
-                                        type="submit"
-                                        disabled={isChatLoading || !chatQuery.trim()}
-                                        style={{
-                                            background: '#8b5cf6', color: 'white', border: 'none', width: '40px', height: '40px',
-                                            borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                            cursor: (isChatLoading || !chatQuery.trim()) ? 'not-allowed' : 'pointer',
-                                            opacity: (isChatLoading || !chatQuery.trim()) ? 0.6 : 1
-                                        }}
-                                    >
-                                        <Send size={16} />
-                                    </button>
-                                </form>
-                            </div>
-
-                        </div>
-                    </section>
-
-                    {/* City Live Broadcast */}
-                    <section style={{ background: '#fff', padding: '1.5rem', borderRadius: '1rem', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)', borderTop: '4px solid #3b82f6' }}>
-                        <h2 style={{ fontSize: '1.2rem', fontWeight: 700, color: '#0f172a', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                            <Radio color="#3b82f6" /> City Authority Broadcasts
-                        </h2>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                            {newsBroadcasts.map(msg => (
-                                <div key={msg.id} style={{ padding: '1rem', background: '#eff6ff', borderRadius: '0.5rem', display: 'flex', gap: '1rem' }}>
-                                    <Info color="#2563eb" style={{ flexShrink: 0, marginTop: '2px' }} />
-                                    <div>
-                                        <p style={{ margin: 0, color: '#1e3a8a', fontSize: '0.95rem', lineHeight: 1.4 }}>{msg.text}</p>
-                                        <span style={{ fontSize: '0.75rem', color: '#60a5fa', marginTop: '0.25rem', display: 'block' }}>{msg.time}</span>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    </section>
-
-                </div>
-
-                {/* Sidebar Content Column */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-
-                    {/* Traffic Status Widget */}
-                    <section style={{ background: '#fff', padding: '1.5rem', borderRadius: '1rem', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
-                        <h2 style={{ fontSize: '1.1rem', fontWeight: 700, color: '#0f172a', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                            <Navigation color="#10b981" /> Live Traffic
-                        </h2>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '1rem', background: trafficAnomalies > 5 ? '#fef2f2' : '#f0fdf4', borderRadius: '0.5rem' }}>
-                            <div style={{ width: '12px', height: '12px', borderRadius: '50%', background: trafficAnomalies > 5 ? '#ef4444' : '#10b981', boxShadow: `0 0 10px ${trafficAnomalies > 5 ? '#ef4444' : '#10b981'}` }}></div>
-                            <div>
-                                <div style={{ fontSize: '1.2rem', fontWeight: 800, color: trafficAnomalies > 5 ? '#991b1b' : '#065f46' }}>{trafficAnomalies} Congested Zones</div>
-                                <div style={{ fontSize: '0.8rem', color: trafficAnomalies > 5 ? '#b91c1c' : '#047857' }}>Across monitored city areas</div>
-                            </div>
-                        </div>
-                        <button style={{ width: '100%', marginTop: '1rem', background: 'white', border: '1px solid #cbd5e1', padding: '0.5rem', borderRadius: '0.5rem', color: '#475569', fontWeight: 600, cursor: 'pointer' }}>
-                            Request Safe Route
-                        </button>
-                    </section>
-
-
-
-                    {/* Emergency Contacts */}
-                    <section style={{ background: '#fff', padding: '1.5rem', borderRadius: '1rem', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)', background: '#1e293b', color: 'white' }}>
-                        <h2 style={{ fontSize: '1.1rem', fontWeight: 700, color: 'white', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                            <PhoneCall color="#38bdf8" /> Emergency Contacts
-                        </h2>
-                        <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                            <li style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.95rem' }}><span>Police / Emergency</span> <span style={{ fontWeight: 700, color: '#38bdf8' }}>911</span></li>
-                            <li style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.95rem' }}><span>Fire Department</span> <span style={{ fontWeight: 700, color: '#38bdf8' }}>911</span></li>
-                            <li style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.95rem' }}><span>Disaster Management</span> <span style={{ fontWeight: 700, color: '#38bdf8' }}>311</span></li>
-                        </ul>
-                    </section>
-
-                </div>
-            </div>
-
-            {/* Incident Reporting Modal */}
-            {isReportModalOpen && (
-                <div style={{ position: 'fixed', inset: 0, background: 'rgba(15, 23, 42, 0.6)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
-                    <div style={{ background: '#fff', padding: '2rem', borderRadius: '1.5rem', width: '100%', maxWidth: '500px', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-                            <h2 style={{ fontSize: '1.5rem', fontWeight: 800, color: '#0f172a', margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                <Send color="#6366f1" /> Report an Incident
-                            </h2>
-                            <button onClick={() => setIsReportModalOpen(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#64748b' }}>
-                                <X size={24} />
-                            </button>
-                        </div>
-                        <form onSubmit={handleReportSubmit} style={{ display: 'grid', gap: '1.25rem' }}>
-                            <div>
-                                <label style={{ display: 'block', fontSize: '0.9rem', fontWeight: 600, color: '#475569', marginBottom: '0.5rem' }}>Incident Type</label>
-                                <select
-                                    value={reportForm.type}
-                                    onChange={e => setReportForm({ ...reportForm, type: e.target.value })}
-                                    style={{ width: '100%', padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid #cbd5e1', fontSize: '1rem' }}
-                                >
-                                    <option value="Traffic Accident">Traffic Accident</option>
-                                    <option value="Road Block / Obstruction">Road Block / Obstruction</option>
-                                    <option value="Flood / Waterlogging">Flood / Waterlogging</option>
-                                    <option value="Fire / Hazard">Fire / Hazard</option>
-                                    <option value="Infrastructure Damage">Infrastructure Damage</option>
-                                    <option value="Public Safety Issue">Public Safety Issue</option>
-                                </select>
-                            </div>
-
-                            <div>
-                                <label style={{ display: 'block', fontSize: '0.9rem', fontWeight: 600, color: '#475569', marginBottom: '0.5rem' }}>Approximate Location</label>
-                                <div style={{ display: 'flex', gap: '0.5rem' }}>
-                                    <input
-                                        type="text"
-                                        required
-                                        placeholder="e.g. Main St Bridge"
-                                        value={reportForm.location}
-                                        onChange={e => setReportForm({ ...reportForm, location: e.target.value })}
-                                        style={{ flex: 1, padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid #cbd5e1', fontSize: '1rem' }}
-                                    />
-                                    <button type="button" onClick={getGeolocation} style={{ padding: '0 1rem', background: '#f1f5f9', border: '1px solid #cbd5e1', borderRadius: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.25rem', cursor: 'pointer', color: '#475569', fontWeight: 600 }}>
-                                        <MapPin size={18} /> Auto-GPS
-                                    </button>
-                                </div>
-                            </div>
-
-                            <div>
-                                <label style={{ display: 'block', fontSize: '0.9rem', fontWeight: 600, color: '#475569', marginBottom: '0.5rem' }}>Short Description</label>
-                                <textarea
-                                    required
-                                    placeholder="Describe the incident (e.g. Fallen tree blocking one lane)"
-                                    value={reportForm.description}
-                                    onChange={e => setReportForm({ ...reportForm, description: e.target.value })}
-                                    rows={3}
-                                    style={{ width: '100%', padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid #cbd5e1', fontSize: '1rem', resize: 'vertical' }}
-                                />
-                            </div>
-
-                            <div>
-                                <label style={{ display: 'block', fontSize: '0.9rem', fontWeight: 600, color: '#475569', marginBottom: '0.5rem' }}>Photo Upload (Required)</label>
-                                <input
-                                    type="file"
-                                    required
-                                    accept="image/*"
-                                    onChange={e => setReportForm({ ...reportForm, photo: e.target.files[0] })}
-                                    style={{ width: '100%', padding: '0.5rem', border: '1px dashed #cbd5e1', borderRadius: '0.5rem', background: '#f8fafc' }}
-                                />
-                                <span style={{ fontSize: '0.75rem', color: '#94a3b8', marginTop: '0.25rem', display: 'block' }}>Helps prevent fraudulent reports.</span>
-                            </div>
-
-                            <button type="submit" style={{ background: '#4f46e5', color: 'white', border: 'none', padding: '1rem', borderRadius: '0.75rem', fontWeight: 700, fontSize: '1rem', cursor: 'pointer', transition: 'background 0.2s', marginTop: '0.5rem' }}>
-                                Submit to City AI
-                            </button>
-                            {reportStatus && (
-                                <div style={{ padding: '1rem', background: '#dcfce7', color: '#166534', borderRadius: '0.5rem', fontSize: '0.95rem', textAlign: 'center', fontWeight: 500 }}>
-                                    {reportStatus}
-                                </div>
-                            )}
-                        </form>
-                    </div>
-                </div>
+          <button
+            type="submit"
+            disabled={isLoadingCity}
+            className={`px-6 py-3 rounded-xl font-semibold flex items-center gap-2 transition-all
+            ${
+              isLoadingCity
+                ? "bg-white/10 cursor-not-allowed"
+                : "bg-white/10 hover:bg-white/20"
+            }`}
+          >
+            {isLoadingCity ? (
+              <Loader className="spin text-white" size={20} />
+            ) : (
+              <Search size={20} className="text-white" />
             )}
-        </div>
-    );
+            <span className="text-white">Monitor</span>
+          </button>
+        </form>
+
+        {cityError && (
+          <p className="text-red-400 mt-4 font-medium">{cityError}</p>
+        )}
+
+        <style
+          dangerouslySetInnerHTML={{
+            __html: `
+              @keyframes spin { 
+                100% { transform: rotate(360deg); } 
+              }
+              .spin { 
+                animation: spin 1s linear infinite; 
+              }
+            `,
+          }}
+        />
+      </div>
+    </div>
+  );
+}
+
+   return (
+<div className="bg-[#0a0a0f] min-h-screen font-inter text-white flex">
+
+{/* SIDEBAR */}
+
+<div className="w-[260px] border-r border-white/10 bg-black/40 backdrop-blur-xl flex flex-col p-6 gap-6 sticky top-0 h-screen">
+
+<div className="text-xl font-semibold tracking-tight">
+CityTwin
+</div>
+
+<nav className="flex flex-col gap-2 text-sm">
+
+<a href="#alerts" className="px-4 py-2 rounded-lg hover:bg-white/10 transition flex items-center gap-2">
+<ShieldAlert size={16}/> Alerts
+</a>
+
+<a href="#plan" className="px-4 py-2 rounded-lg hover:bg-white/10 transition flex items-center gap-2">
+<Info size={16}/> Authority Plan
+</a>
+
+<a href="#chat" className="px-4 py-2 rounded-lg hover:bg-white/10 transition flex items-center gap-2">
+<Search size={16}/> CityBuddy
+</a>
+
+<a href="#traffic" className="px-4 py-2 rounded-lg hover:bg-white/10 transition flex items-center gap-2">
+<Navigation size={16}/> Traffic
+</a>
+
+<a href="#emergency" className="px-4 py-2 rounded-lg hover:bg-white/10 transition flex items-center gap-2">
+<PhoneCall size={16}/> Emergency
+</a>
+
+</nav>
+
+<div className="mt-auto text-xs text-white/40">
+AI Digital Twin Monitoring
+</div>
+
+</div>
+
+
+{/* MAIN CONTENT */}
+
+<div className="flex-1 px-10 py-10 overflow-y-auto">
+
+<div className="max-w-[1100px] mx-auto">
+
+{/* Header */}
+
+<div className="flex justify-between items-center mb-10">
+
+<div>
+<h1 className="text-4xl font-bold tracking-tight">
+Citizen Portal: {cityData.name || searchCity}
+</h1>
+
+<p className="text-white/60 mt-1">
+Real-time public information and safety alerts for your city.
+</p>
+</div>
+
+<button
+onClick={() => setIsReportModalOpen(true)}
+className="bg-white text-black px-6 py-3 rounded-xl font-semibold flex items-center gap-2 hover:scale-[1.02] transition"
+>
+<Send size={18}/>
+Report Incident
+</button>
+
+</div>
+
+
+{/* ALERTS */}
+
+<section
+id="alerts"
+className="bg-white/5 border border-white/10 rounded-2xl p-6 backdrop-blur-xl mb-6"
+>
+
+<h2 className="text-lg font-semibold flex items-center gap-2 mb-4">
+<ShieldAlert className="text-red-400"/>
+Live AI Crisis Alerts
+</h2>
+
+{publicAlerts.length === 0 ? (
+
+<div className="text-center py-10 text-white/40">
+No active crisis alerts right now.
+</div>
+
+) : (
+
+<div className="flex flex-col gap-3">
+
+{publicAlerts.map(alert => (
+
+<div
+key={alert.id}
+className="bg-red-500/10 border border-red-500/30 rounded-lg p-4"
+>
+
+<div className="flex justify-between mb-1">
+
+<span className="font-semibold text-red-400 text-xs uppercase">
+⚠️ {alert.type} Warning
+</span>
+
+<span className="text-xs text-white/50">
+{alert.timestamp}
+</span>
+
+</div>
+
+<p className="text-sm text-white/80">
+{alert.message}
+</p>
+
+</div>
+
+))}
+
+</div>
+
+)}
+
+</section>
+
+
+{/* PLAN */}
+
+{publishedPlan && (
+
+<section
+id="plan"
+className="bg-white/5 border border-white/10 rounded-2xl p-6 backdrop-blur-xl mb-6"
+>
+
+<h2 className="text-lg font-semibold flex items-center gap-2 mb-4">
+<ShieldAlert className="text-emerald-400"/>
+Official Authority Action Plan
+</h2>
+
+<div
+dangerouslySetInnerHTML={{
+__html: renderMarkdown(publishedPlan.plan)
+}}
+className="text-sm text-white/80"
+/>
+
+</section>
+
+)}
+
+
+{/* CHAT */}
+
+<section
+id="chat"
+className="bg-white/5 border border-white/10 rounded-2xl p-6 backdrop-blur-xl mb-6"
+>
+
+<h2 className="text-lg font-semibold flex items-center gap-2 mb-4">
+<Search className="text-violet-400"/>
+Ask CityBuddy
+</h2>
+
+<div className="flex flex-col h-[350px] bg-black/30 rounded-xl border border-white/10">
+
+<div className="flex-1 overflow-y-auto p-4 flex flex-col gap-4">
+
+{chatHistory.map((msg, idx) => (
+
+<div
+key={idx}
+className={`flex ${
+msg.role === "user" ? "justify-end" : "justify-start"
+}`}
+>
+
+<div
+className={`max-w-[80%] px-4 py-2 rounded-xl text-sm ${
+msg.role === "user"
+? "bg-white text-black"
+: "bg-white/10 text-white"
+}`}
+>
+
+{msg.text}
+
+</div>
+
+</div>
+
+))}
+
+</div>
+
+
+<div className="border-t border-white/10 p-3">
+
+<form onSubmit={handleChatSubmit} className="flex gap-2">
+
+<input
+type="text"
+value={chatQuery}
+onChange={(e)=>setChatQuery(e.target.value)}
+placeholder="Ask about traffic, weather..."
+className="flex-1 bg-white/5 border border-white/10 rounded-full px-4 py-2 text-sm"
+/>
+
+<button
+type="submit"
+className="bg-violet-500 w-10 h-10 rounded-full flex items-center justify-center"
+>
+
+<Send size={16}/>
+
+</button>
+
+</form>
+
+</div>
+
+</div>
+
+</section>
+
+
+{/* TRAFFIC */}
+
+<section
+id="traffic"
+className="bg-white/5 border border-white/10 rounded-2xl p-6 backdrop-blur-xl mb-6"
+>
+
+<h2 className="text-lg font-semibold flex items-center gap-2 mb-4">
+<Navigation className="text-emerald-400"/>
+Live Traffic
+</h2>
+
+<div className="text-white/70">
+{trafficAnomalies} Congested Zones
+</div>
+
+</section>
+
+
+{/* EMERGENCY */}
+
+<section
+id="emergency"
+className="bg-white/5 border border-white/10 rounded-2xl p-6 backdrop-blur-xl"
+>
+
+<h2 className="text-lg font-semibold flex items-center gap-2 mb-4">
+<PhoneCall className="text-sky-400"/>
+Emergency Contacts
+</h2>
+
+<ul className="flex flex-col gap-3 text-sm">
+
+<li className="flex justify-between">
+<span>Police</span>
+<span className="text-sky-400">911</span>
+</li>
+
+<li className="flex justify-between">
+<span>Fire</span>
+<span className="text-sky-400">911</span>
+</li>
+
+<li className="flex justify-between">
+<span>Disaster</span>
+<span className="text-sky-400">311</span>
+</li>
+
+</ul>
+
+</section>
+
+</div>
+</div>
+
+
+{/* FLOATING QUERY BOT */}
+
+<button
+onClick={() => {
+document.getElementById("chat").scrollIntoView({ behavior: "smooth" });
+}}
+className="fixed bottom-6 right-6 bg-violet-500 w-14 h-14 rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition"
+>
+
+<Search size={22}/>
+
+           </button>
+           
+
+</div>
+);
 }

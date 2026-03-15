@@ -4,10 +4,10 @@ import Home from './pages/Home';
 import DigitalTwin from './pages/DigitalTwin';
 import CitizenDashboard from './pages/CitizenDashboard';
 import Navbar from './components/Navbar';
+import Traffic from './pages/Traffic';
 import './index.css';
-import Home from './pages/Home';
 
-function App() {
+function AppContent() {
   return (
     <Router>
       <div className="app-root">
@@ -16,6 +16,7 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/twin" element={<DigitalTwin />} />
           <Route path="/citizen" element={<CitizenDashboard />} />
+          <Route path="/traffic" element={<Traffic />} />
         </Routes>
       </div>
     </Router>
@@ -24,9 +25,7 @@ function App() {
 
 function App() {
   return (
-    <Router>
-      <AppContent />
-    </Router>
+    <AppContent />
   );
 }
 

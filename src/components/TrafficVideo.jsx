@@ -140,6 +140,8 @@ const TrafficVideo = ({ onStatsUpdate }) => {
                         congestionLevel = 'MODERATE';
                         incidentPayload = { incident_type: "TRAFFIC_BUILDUP", location: "Junction A", severity: "MODERATE", timestamp: new Date().toLocaleTimeString() };
                         recommendationPayload = { alert: "Traffic volume increasing", recommended_action: "Monitor intersection flow", priority: "MEDIUM" };
+                    } else {
+                        congestionLevel = 'LOW';
                     }
 
                     onStatsUpdate({ vehicleCount: count, congestionLevel, incidentPayload, recommendationPayload });
@@ -155,22 +157,22 @@ const TrafficVideo = ({ onStatsUpdate }) => {
     });
 
     return (
-        <div className="p-10 w-full flex flex-col">
+        <div className="p-8 w-full flex flex-col">
             <h2 className="text-2xl font-bold mb-2 text-text-primary">AI Traffic Video Tracking</h2>
-            <p className="mb-8 text-text-secondary max-w-2xl">Upload city traffic camera footage to monitor congestion and detect incidents in real-time with YOLO intelligence.</p>
+            <p className="mb-8 text-text-secondary">Upload city traffic camera footage to monitor congestion and detect incidents in real-time with YOLO intelligence.</p>
             
             <div className="flex items-center gap-4 mb-10">
-                <label className="px-6 py-3 bg-accent-blue text-white rounded-xl cursor-pointer hover:bg-blue-700 transition-all shadow-lg shadow-blue-500/20 font-medium">
-                    Choose Video File
+                <label className="px-6 py-3 bg-accent-blue text-white rounded-xl cursor-pointer hover:bg-blue-700 transition-all shadow-lg shadow-blue-500/20 font-medium whitespace-nowrap">
+                    Choose Video
                     <input type="file" accept="video/*" onChange={handleFileChange} className="hidden" />
                 </label>
-                <div className="flex-1 px-4 py-3 bg-bg-primary border border-border-subtle rounded-xl text-sm text-text-secondary italic">
+                <div className="flex-1 px-4 py-3 bg-bg-primary border border-border-subtle rounded-xl text-sm text-text-secondary italic overflow-hidden text-ellipsis whitespace-nowrap">
                     {file ? file.name : "Waiting for footage selection..."}
                 </div>
                 <button 
                     onClick={handleUpload} 
                     disabled={!file || ['uploading', 'queue', 'processing'].includes(status)} 
-                    className="px-8 py-3 bg-slate-900 text-white rounded-xl hover:bg-black disabled:bg-slate-300 disabled:cursor-not-allowed transition-all font-bold"
+                    className="px-8 py-3 bg-slate-900 text-white rounded-xl hover:bg-black disabled:bg-slate-300 disabled:cursor-not-allowed transition-all font-bold whitespace-nowrap"
                 >
                     {status === 'uploading' ? "Uploading..." : "Analyze Stream"}
                 </button>
@@ -200,12 +202,12 @@ const TrafficVideo = ({ onStatsUpdate }) => {
             </div>
 
             {status === 'completed' && videoUrl && (
-                <div className="relative w-full max-w-[900px] aspect-video bg-black rounded-3xl overflow-hidden border border-border-subtle shadow-2xl">
+                <div className="relative w-full max-w-lg mx-auto bg-black rounded-3xl overflow-hidden border border-border-subtle shadow-2xl">
                     <video
                         ref={videoRef}
                         src={videoUrl}
                         controls
-                        className="w-full h-full object-contain"
+                        className="w-full h-auto block"
                     />
                     <canvas
                         ref={canvasRef}

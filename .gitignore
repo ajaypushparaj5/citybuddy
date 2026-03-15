@@ -24,3 +24,4 @@ dist-ssr
 *.sw?
 API_GUIDE.md
 .env
+python-worker/venv

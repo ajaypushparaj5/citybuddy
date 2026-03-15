@@ -35,8 +35,47 @@ AI-CityEngine is a **smart city digital twin** that:
 
 ---
 
-## Live Demo Flow
+## Screenshots
 
+### 1. 🗺️ Digital Twin — Live City Map (Kalamassery)
+> Real road network extracted from OpenStreetMap. Red/orange = heavy traffic. Green = hospitals. Pink = fire stations. Blue = police.
+
+![Digital Twin Map](public/Screenshot%20from%202026-03-15%2014-52-54.png)
+
+---
+
+### 2. 🚨 Action Plan Modal — Analysing Crisis Vectors
+> Emergency dispatch alert triggered by the AI swarm. The ActionPlanAgent is calling Gemini to generate a government-grade response plan.
+
+![Action Plan Generating](public/Screenshot%20from%202026-03-15%2014-47-55.png)
+
+---
+
+### 3. 🛡️ Citizen Portal — Live Alert + Official Action Plan
+> Citizen Portal showing an active EmergencyAgent alert alongside the published official authority action plan with full incident breakdown.
+
+![Citizen Portal with Alert and Plan](public/Screenshot%20from%202026-03-15%2014-52-10.png)
+
+---
+
+### 4. 💬 CityBuddy AI Chatbot
+> Bottom of the Citizen Portal — the published plan's closing authority note and the CityBuddy AI assistant ready to answer citizen queries.
+
+![CityBuddy Chatbot](public/Screenshot%20from%202026-03-15%2014-52-19.png)
+
+---
+
+### 5. 🏙️ Citizen Portal — Stable City State
+> Citizen Portal in a normal (no active crisis) state showing City Health 100/100, authority broadcasts, and emergency contact numbers.
+
+![Citizen Portal Stable](public/Screenshot%20from%202026-03-15%2012-30-26.png)
+
+---
+
+### 6. 🏙️ Traffic AI
+> The traffic AI agent is running in the background and detects anomalies in the traffic flow.
+
+![Traffic AI](public/WhatsApp%20Image%202026-03-15%20at%202.56.12%20PM.jpeg)
 ```
 Operator enters city name (e.g. "Mumbai")
     ↓

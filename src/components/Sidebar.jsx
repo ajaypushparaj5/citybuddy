@@ -14,6 +14,8 @@ const Sidebar = ({
     selectedArea = null,
     areaParams = { rainfall: 0, trafficDensity: 0 },
     setAreaParams,
+    resourceBudget = { ambulances: 50, fireTrucks: 20, policeUnits: 100, medicalPersonnel: 200, helicopters: 2, volunteers: 500, cityBudgetMil: 5 },
+    setResourceBudget,
     agentStates = [],
     elevationSamples = null,
     onRunScenario,
@@ -22,6 +24,14 @@ const Sidebar = ({
     const [cityName, setCityName] = useState('New York, NY');
     const [activeAgentTab, setActiveAgentTab] = useState(null);
     const [selectedAlertForPlan, setSelectedAlertForPlan] = useState(null);
+
+    const updateResource = (key, delta) => {
+        if (!setResourceBudget) return;
+        setResourceBudget(prev => ({
+            ...prev,
+            [key]: Math.max(0, prev[key] + delta)
+        }));
+    };
 
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -183,6 +193,31 @@ const Sidebar = ({
                                         <input type="checkbox" checked={areaParams.evacuationOrder} onChange={(e) => setAreaParams({ ...areaParams, evacuationOrder: e.target.checked })} className="accent-red-600 w-3.5 h-3.5" />
                                     </div>
                                 </div>
+
+                                {/* CITY ASSETS & RESOURCES */}
+                                <div className="bg-white/50 p-2 rounded-lg border-l-4 border-emerald-500 shadow-xs border-y border-r border-emerald-50/50">
+                                    <h3 className="text-[0.75rem] text-emerald-700 mb-2 flex items-center gap-1 font-bold italic">🛡️ City Assets & Resources</h3>
+                                    <div className="text-[0.6rem] text-slate-500 mb-2 italic">Set available units before running scenario</div>
+
+                                    {[
+                                        { key: 'ambulances', label: 'Ambulances', step: 5, unit: '' },
+                                        { key: 'fireTrucks', label: 'Fire Trucks', step: 2, unit: '' },
+                                        { key: 'policeUnits', label: 'Police Units', step: 10, unit: '' },
+                                        { key: 'medicalPersonnel', label: 'Med Personnel', step: 20, unit: '' },
+                                        { key: 'helicopters', label: 'Helicopters', step: 1, unit: '' },
+                                        { key: 'volunteers', label: 'Volunteers', step: 50, unit: '' },
+                                        { key: 'cityBudgetMil', label: 'Emergency Funds', step: 1, unit: 'M' }
+                                    ].map(({ key, label, step, unit }) => (
+                                        <div key={key} className="mb-2 flex justify-between items-center bg-emerald-50/50 p-1.5 rounded">
+                                            <span className="text-[0.65rem] text-emerald-900 font-bold flex-1">{label}</span>
+                                            <div className="flex items-center gap-2">
+                                                <button type="button" onClick={() => updateResource(key, -step)} className="w-5 h-5 flex items-center justify-center bg-white border border-emerald-200 rounded text-emerald-700 font-bold hover:bg-emerald-100 cursor-pointer">-</button>
+                                                <span className="text-[0.7rem] font-bold text-slate-700 min-w-[30px] text-center">{unit ? '$' : ''}{resourceBudget[key]}{unit}</span>
+                                                <button type="button" onClick={() => updateResource(key, step)} className="w-5 h-5 flex items-center justify-center bg-white border border-emerald-200 rounded text-emerald-700 font-bold hover:bg-emerald-100 cursor-pointer">+</button>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
                             </div>
 
                             <button
@@ -237,11 +272,10 @@ const Sidebar = ({
                                         <div
                                             key={agent.name}
                                             onClick={() => setActiveAgentTab(activeAgentTab === agent.name ? null : agent.name)}
-                                            className={`p-3 rounded-lg cursor-pointer transition-all duration-200 relative border ${
-                                                activeAgentTab === agent.name 
-                                                ? 'bg-blue-50 border-accent-blue shadow-sm' 
-                                                : 'bg-slate-50 border-border-subtle hover:border-slate-300'
-                                            }`}
+                                            className={`p-3 rounded-lg cursor-pointer transition-all duration-200 relative border ${activeAgentTab === agent.name
+                                                    ? 'bg-blue-50 border-accent-blue shadow-sm'
+                                                    : 'bg-slate-50 border-border-subtle hover:border-slate-300'
+                                                }`}
                                         >
                                             <div className="text-[0.65rem] font-bold text-text-primary mb-1 truncate">{agent.name.replace('Agent', '')}</div>
                                             <div className="flex items-center gap-1">
@@ -330,19 +364,17 @@ const Sidebar = ({
                                         <div className="text-slate-700 text-[0.75rem] italic text-center mt-10">Scanning autonomous datasets...</div>
                                     ) : (
                                         activeAlerts.map(alert => (
-                                            <div key={alert.id} className={`mb-2 p-2.5 rounded border-l-4 animate-in slide-in-from-left duration-300 ${
-                                                alert.severity === 'high' 
-                                                ? 'bg-red-950/40 border-red-600' 
-                                                : 'bg-slate-900 border-blue-600'
-                                            }`}>
+                                            <div key={alert.id} className={`mb-2 p-2.5 rounded border-l-4 animate-in slide-in-from-left duration-300 ${alert.severity === 'high'
+                                                    ? 'bg-red-950/40 border-red-600'
+                                                    : 'bg-slate-900 border-blue-600'
+                                                }`}>
                                                 <div className="flex justify-between mb-1">
-                                                    <span className={`text-[0.65rem] font-black uppercase tracking-widest ${
-                                                        alert.severity === 'high' ? 'text-red-400' : 'text-blue-400'
-                                                    }`}>{alert.agent}</span>
+                                                    <span className={`text-[0.65rem] font-black uppercase tracking-widest ${alert.severity === 'high' ? 'text-red-400' : 'text-blue-400'
+                                                        }`}>{alert.agent}</span>
                                                     <span className="text-[0.6rem] text-slate-600 font-mono">{alert.timestamp}</span>
                                                 </div>
                                                 <div className="text-[0.75rem] text-slate-200 leading-snug mb-2 font-medium">{alert.message}</div>
-                                                
+
                                                 {(alert.type === 'flood_warning' || alert.type === 'flood' || alert.type === 'accident' || alert.type === 'emergency_dispatch') && (
                                                     <button
                                                         onClick={() => setSelectedAlertForPlan(alert)}

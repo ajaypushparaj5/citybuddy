@@ -24,6 +24,7 @@ function haversine(lat1, lon1, lat2, lon2) {
 function buildContext({ alert, cityData, sensorData, elevationSamples }) {
     const { lat, lon } = alert;
     const now = new Date();
+    const cityResourceBudget = sensorData?.areaConfig?.resources || {};
 
     // ── Nearest facilities (sorted by Haversine) ─────────────────────────────
     const withDist = (cityData?.nodes || [])
@@ -87,7 +88,8 @@ function buildContext({ alert, cityData, sensorData, elevationSamples }) {
         infrastructureSummary: {
             totalHospitals: cityData?.infrastructure?.hospitals || 0,
             totalEmergency: cityData?.infrastructure?.emergency || 0,
-        }
+        },
+        cityResourceBudget: cityResourceBudget
     };
 }
 
@@ -109,7 +111,9 @@ This document will be reviewed by:
 === CITY CONTEXT ===
 ${JSON.stringify(context, null, 2)}
 
-CRITICAL INSTRUCTION: Analyze the "abnormalConditions" block closely. If there are high winds, earthquakes, fire risks, grid overloads, or any other hazards listed, explicitly mention how they compound the primary crisis in the Threat Assessment, and mitigate for them in the Action Plan.
+CRITICAL INSTRUCTION 1: Analyze the "abnormalConditions" block closely. If there are high winds, earthquakes, fire risks, grid overloads, or any other hazards listed, explicitly mention how they compound the primary crisis in the Threat Assessment, and mitigate for them in the Action Plan.
+
+CRITICAL INSTRUCTION 2: Look STRICTLY at the "cityResourceBudget" block. You MUST NOT dispatch more resources than are currently available. If there are 0 ambulances, you CANNOT dispatch an ambulance; you must invent an alternative strategy (e.g. using police cars or volunteers for transport). The Resource Deployment Table must adhere to these absolute physical limits.
 
 === RESPONSE FORMAT ===
 Write the action plan in clean markdown. Use this exact structure:

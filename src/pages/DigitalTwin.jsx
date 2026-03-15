@@ -17,7 +17,7 @@ function DigitalTwin() {
   const [sensorData, setSensorData] = useState(null);
   const [selectedArea, setSelectedArea] = useState(null);
 
-  const [areaParams, setAreaParams] = useState({ 
+  const [areaParams, setAreaParams] = useState({
     // Weather
     rainfall: 0, windSpeed: 0, temperature: 22, fog: 0, earthquake: 0,
     // Transport
@@ -29,6 +29,17 @@ function DigitalTwin() {
     // Crisis
     fireRisk: 0, chemicalSpill: false, airQuality: 50
   });
+
+  const [resourceBudget, setResourceBudget] = useState({
+    ambulances: 50,
+    fireTrucks: 20,
+    policeUnits: 100,
+    medicalPersonnel: 200,
+    helicopters: 2,
+    volunteers: 500,
+    cityBudgetMil: 5
+  });
+
   const [agentStates, setAgentStates] = useState([]);
 
   const handleCitySubmit = async (cityName) => {
@@ -83,13 +94,14 @@ function DigitalTwin() {
     if (cityData) {
       dataIntegrationService.updateAreaConfig({
         bbox: selectedArea,
-        params: areaParams
+        params: areaParams,
+        resources: resourceBudget
       });
     }
-  }, [selectedArea, areaParams, cityData]);
+  }, [selectedArea, areaParams, resourceBudget, cityData]);
 
   return (
-    <div className="twin-page-container" style={{ display: 'flex', height: '100vh', width: '100vw', overflow: 'hidden' }}>
+    <div className="twin-page-container" style={{ display: 'flex', height: 'calc(100vh - 54px)', width: '100%', overflow: 'hidden' }}>
       <Sidebar
         onSubmit={handleCitySubmit}
         isLoading={isLoading}
@@ -104,6 +116,8 @@ function DigitalTwin() {
         selectedArea={selectedArea}
         areaParams={areaParams}
         setAreaParams={setAreaParams}
+        resourceBudget={resourceBudget}
+        setResourceBudget={setResourceBudget}
         agentStates={agentStates}
         elevationSamples={elevationSamples}
       />

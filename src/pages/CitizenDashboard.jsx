@@ -4,6 +4,7 @@ import { dataIntegrationService } from '../services/dataIntegrationService';
 import { agentManager } from '../agents/CityAgentManager';
 import { fetchCityData } from '../services/osmService';
 import { QueryAgent } from '../agents/QueryAgent';
+import { renderMarkdown } from '../utils/markdownRenderer';
 
 const queryBot = new QueryAgent();
 
@@ -21,7 +22,7 @@ export default function CitizenDashboard() {
     const [reportForm, setReportForm] = useState({ type: 'Traffic Accident', location: '', description: '', photo: null, coords: null });
     const [reportStatus, setReportStatus] = useState(null);
     const [newsBroadcasts, setNewsBroadcasts] = useState([]);
-    
+
     // New Feature States
     const [isReportModalOpen, setIsReportModalOpen] = useState(false);
     const [searchCity, setSearchCity] = useState('');
@@ -75,7 +76,7 @@ export default function CitizenDashboard() {
 
     useEffect(() => {
         if (cityData) {
-            agentManager.init(cityData, () => {});
+            agentManager.init(cityData, () => { });
             dataIntegrationService.start(cityData.bbox, cityData.edges);
 
             return () => {
@@ -92,24 +93,24 @@ export default function CitizenDashboard() {
 
             let score = 100 - (heavyTraffic.length * 2);
             if (data.abnormalConditions && data.abnormalConditions.length > 0) {
-                 score -= (data.abnormalConditions.length * 5);
+                score -= (data.abnormalConditions.length * 5);
             }
 
             let status = 'Stable';
             if (score < 70) status = 'Warning';
             if (score < 50) status = 'Critical';
-            
+
             setCityHealth({ score: Math.max(0, score), status });
         };
 
         // Poll LocalStorage for published action plan
         const checkPlan = () => {
-             const planStr = localStorage.getItem('citybuddy_published_action_plan');
-             if (planStr) {
-                 try {
-                     setPublishedPlan(JSON.parse(planStr));
-                 } catch (e) {}
-             }
+            const planStr = localStorage.getItem('citybuddy_published_action_plan');
+            if (planStr) {
+                try {
+                    setPublishedPlan(JSON.parse(planStr));
+                } catch (e) { }
+            }
         };
         checkPlan();
         const planInterval = setInterval(checkPlan, 3000);
@@ -145,7 +146,7 @@ export default function CitizenDashboard() {
         };
 
         const response = await queryBot.handleQuery(userMsg, fullState, publicAlerts);
-        
+
         setChatHistory(prev => [...prev, { role: 'ai', text: response }]);
         setIsChatLoading(false);
     };
@@ -156,7 +157,7 @@ export default function CitizenDashboard() {
                 (position) => {
                     const lat = position.coords.latitude;
                     const lon = position.coords.longitude;
-                    setReportForm({...reportForm, location: `Auto-GPS (${lat.toFixed(4)}, ${lon.toFixed(4)})`, coords: {lat, lon}});
+                    setReportForm({ ...reportForm, location: `Auto-GPS (${lat.toFixed(4)}, ${lon.toFixed(4)})`, coords: { lat, lon } });
                 },
                 (error) => {
                     alert("Error fetching location. Please enter manually.");
@@ -169,15 +170,15 @@ export default function CitizenDashboard() {
 
     const handleReportSubmit = (e) => {
         e.preventDefault();
-        
+
         if (!reportForm.photo) {
             setReportStatus("⚠️ Error: A photo upload is strictly required to submit a report.");
             return;
         }
 
         // Simple Duplicate Detection
-        const isDuplicate = publicAlerts.some(alert => 
-            alert.type.toLowerCase().includes(reportForm.type.toLowerCase()) || 
+        const isDuplicate = publicAlerts.some(alert =>
+            alert.type.toLowerCase().includes(reportForm.type.toLowerCase()) ||
             alert.message.toLowerCase().includes(reportForm.type.toLowerCase())
         );
 
@@ -206,24 +207,24 @@ export default function CitizenDashboard() {
     if (!cityData) {
         return (
             <div style={{ padding: '4rem 2rem', maxWidth: '600px', margin: '10vh auto', textAlign: 'center', fontFamily: 'Inter, sans-serif' }}>
-                 <ShieldAlert size={64} color="#3b82f6" style={{ margin: '0 auto 1.5rem' }} />
-                 <h1 style={{ fontSize: '2.5rem', fontWeight: 800, color: '#0f172a', margin: 0 }}>Citizen Portal</h1>
-                 <p style={{ color: '#64748b', fontSize: '1.1rem', marginTop: '0.5rem', marginBottom: '2rem' }}>
+                <ShieldAlert size={64} color="#3b82f6" style={{ margin: '0 auto 1.5rem' }} />
+                <h1 style={{ fontSize: '2.5rem', fontWeight: 800, color: '#0f172a', margin: 0 }}>Citizen Portal</h1>
+                <p style={{ color: '#64748b', fontSize: '1.1rem', marginTop: '0.5rem', marginBottom: '2rem' }}>
                     Select a city to view real-time safety, transit, and traffic updates powered by the AI Digital Twin.
-                 </p>
-                 <form onSubmit={handleCitySearch} style={{ display: 'flex', gap: '8px' }}>
-                    <input 
-                        type="text" 
+                </p>
+                <form onSubmit={handleCitySearch} style={{ display: 'flex', gap: '8px' }}>
+                    <input
+                        type="text"
                         value={searchCity}
                         onChange={(e) => setSearchCity(e.target.value)}
-                        placeholder="Enter your city (e.g. San Francisco)" 
+                        placeholder="Enter your city (e.g. San Francisco)"
                         style={{ flex: 1, padding: '12px 16px', borderRadius: '12px', border: '1px solid #cbd5e1', fontSize: '1rem' }}
                     />
-                    <button 
-                        type="submit" 
+                    <button
+                        type="submit"
                         disabled={isLoadingCity}
-                        style={{ 
-                            background: '#3b82f6', color: 'white', padding: '12px 24px', borderRadius: '12px', 
+                        style={{
+                            background: '#3b82f6', color: 'white', padding: '12px 24px', borderRadius: '12px',
                             border: 'none', fontWeight: 600, cursor: isLoadingCity ? 'not-allowed' : 'pointer',
                             display: 'flex', alignItems: 'center', gap: '8px'
                         }}
@@ -231,9 +232,10 @@ export default function CitizenDashboard() {
                         {isLoadingCity ? <Loader className="spin" size={20} /> : <Search size={20} />}
                         Monitor
                     </button>
-                 </form>
-                 {cityError && <p style={{ color: '#ef4444', marginTop: '1rem', fontWeight: 500 }}>{cityError}</p>}
-                 <style dangerouslySetInnerHTML={{__html: `
+                </form>
+                {cityError && <p style={{ color: '#ef4444', marginTop: '1rem', fontWeight: 500 }}>{cityError}</p>}
+                <style dangerouslySetInnerHTML={{
+                    __html: `
                     @keyframes spin { 100% { transform: rotate(360deg); } }
                     .spin { animation: spin 1s linear infinite; }
                  `}} />
@@ -243,7 +245,7 @@ export default function CitizenDashboard() {
 
     return (
         <div style={{ padding: '2rem', maxWidth: '1200px', margin: '0 auto', fontFamily: 'Inter, sans-serif' }}>
-            
+
             {/* Header Area */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem', marginTop: '3rem' }}>
                 <div>
@@ -251,7 +253,7 @@ export default function CitizenDashboard() {
                     <p style={{ color: '#64748b', fontSize: '1.1rem', marginTop: '0.5rem' }}>Real-time public information and safety alerts for your city.</p>
                 </div>
                 <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'center' }}>
-                    <button 
+                    <button
                         onClick={() => setIsReportModalOpen(true)}
                         style={{ background: '#4f46e5', color: 'white', border: 'none', padding: '1rem 1.5rem', borderRadius: '1rem', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem', boxShadow: '0 4px 6px -1px rgba(79, 70, 229, 0.2)' }}
                     >
@@ -268,10 +270,10 @@ export default function CitizenDashboard() {
             </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 2fr) minmax(0, 1fr)', gap: '1.5rem' }}>
-                
+
                 {/* Main Content Column */}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-                    
+
                     {/* Live Crisis Alerts (Linked to AI Swarm) */}
                     <section style={{ background: '#fff', padding: '1.5rem', borderRadius: '1rem', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)', borderTop: '4px solid #ef4444' }}>
                         <h2 style={{ fontSize: '1.2rem', fontWeight: 700, color: '#0f172a', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
@@ -297,6 +299,92 @@ export default function CitizenDashboard() {
                         )}
                     </section>
 
+                    {/* Published Action Plan */}
+                    {publishedPlan && (
+                        <section style={{ background: '#fff', padding: '1.5rem', borderRadius: '1rem', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)', borderTop: '4px solid #10b981' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
+                                <h2 style={{ fontSize: '1.2rem', fontWeight: 700, color: '#0f172a', margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                    <ShieldAlert color="#10b981" /> Official Authority Action Plan
+                                </h2>
+                                <span style={{ fontSize: '0.65rem', background: '#dcfce7', color: '#166534', padding: '4px 8px', borderRadius: '4px', fontWeight: 700 }}>
+                                    PUBLISHED: {new Date(publishedPlan.timestamp).toLocaleTimeString()}
+                                </span>
+                            </div>
+                            <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '0.5rem', padding: '1rem' }}>
+                                <div style={{ marginBottom: '0.75rem', paddingBottom: '0.5rem', borderBottom: '1px solid #cbd5e1' }}>
+                                    <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#ef4444', textTransform: 'uppercase' }}>
+                                        Response To: {publishedPlan.alertType?.replace(/_/g, ' ')}
+                                    </div>
+                                    <div style={{ fontSize: '0.85rem', color: '#475569', marginTop: '0.25rem' }}>
+                                        {publishedPlan.alertMessage}
+                                    </div>
+                                </div>
+                                <div dangerouslySetInnerHTML={{ __html: renderMarkdown(publishedPlan.plan) }} style={{ fontSize: '0.85rem', color: '#334155' }} />
+                            </div>
+                        </section>
+                    )}
+
+                    {/* AI Chatbot Interface */}
+                    <section style={{ background: '#fff', padding: '1.5rem', borderRadius: '1rem', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)', borderTop: '4px solid #8b5cf6' }}>
+                        <h2 style={{ fontSize: '1.2rem', fontWeight: 700, color: '#0f172a', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                            <Search color="#8b5cf6" /> Ask CityBuddy
+                        </h2>
+                        <div style={{ background: '#f8fafc', borderRadius: '0.75rem', border: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column', height: '350px' }}>
+
+                            {/* Chat History */}
+                            <div style={{ flex: 1, padding: '1rem', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                                {chatHistory.map((msg, idx) => (
+                                    <div key={idx} style={{ display: 'flex', justifyContent: msg.role === 'user' ? 'flex-end' : 'flex-start' }}>
+                                        <div style={{
+                                            maxWidth: '80%', padding: '0.75rem 1rem', borderRadius: '1rem',
+                                            background: msg.role === 'user' ? '#4f46e5' : '#e2e8f0',
+                                            color: msg.role === 'user' ? 'white' : '#0f172a',
+                                            fontSize: '0.9rem', lineHeight: 1.4,
+                                            borderBottomRightRadius: msg.role === 'user' ? 0 : '1rem',
+                                            borderBottomLeftRadius: msg.role === 'user' ? '1rem' : 0
+                                        }}>
+                                            {msg.text}
+                                        </div>
+                                    </div>
+                                ))}
+                                {isChatLoading && (
+                                    <div style={{ display: 'flex', justifyContent: 'flex-start' }}>
+                                        <div style={{ background: '#e2e8f0', padding: '0.75rem 1rem', borderRadius: '1rem', borderBottomLeftRadius: 0 }}>
+                                            <Loader className="spin" size={16} color="#64748b" />
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Chat Input */}
+                            <div style={{ padding: '0.75rem', borderTop: '1px solid #e2e8f0', background: 'white', borderBottomLeftRadius: '0.75rem', borderBottomRightRadius: '0.75rem' }}>
+                                <form onSubmit={handleChatSubmit} style={{ display: 'flex', gap: '0.5rem' }}>
+                                    <input
+                                        type="text"
+                                        value={chatQuery}
+                                        onChange={(e) => setChatQuery(e.target.value)}
+                                        placeholder="Ask about traffic, weather, or safe zones..."
+                                        disabled={isChatLoading}
+                                        style={{ flex: 1, padding: '0.75rem 1rem', borderRadius: '2rem', border: '1px solid #cbd5e1', fontSize: '0.9rem', outline: 'none' }}
+                                    />
+                                    <button
+                                        type="submit"
+                                        disabled={isChatLoading || !chatQuery.trim()}
+                                        style={{
+                                            background: '#8b5cf6', color: 'white', border: 'none', width: '40px', height: '40px',
+                                            borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                            cursor: (isChatLoading || !chatQuery.trim()) ? 'not-allowed' : 'pointer',
+                                            opacity: (isChatLoading || !chatQuery.trim()) ? 0.6 : 1
+                                        }}
+                                    >
+                                        <Send size={16} />
+                                    </button>
+                                </form>
+                            </div>
+
+                        </div>
+                    </section>
+
                     {/* City Live Broadcast */}
                     <section style={{ background: '#fff', padding: '1.5rem', borderRadius: '1rem', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)', borderTop: '4px solid #3b82f6' }}>
                         <h2 style={{ fontSize: '1.2rem', fontWeight: 700, color: '#0f172a', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
@@ -319,7 +407,7 @@ export default function CitizenDashboard() {
 
                 {/* Sidebar Content Column */}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-                    
+
                     {/* Traffic Status Widget */}
                     <section style={{ background: '#fff', padding: '1.5rem', borderRadius: '1rem', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
                         <h2 style={{ fontSize: '1.1rem', fontWeight: 700, color: '#0f172a', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
@@ -369,9 +457,9 @@ export default function CitizenDashboard() {
                         <form onSubmit={handleReportSubmit} style={{ display: 'grid', gap: '1.25rem' }}>
                             <div>
                                 <label style={{ display: 'block', fontSize: '0.9rem', fontWeight: 600, color: '#475569', marginBottom: '0.5rem' }}>Incident Type</label>
-                                <select 
-                                    value={reportForm.type} 
-                                    onChange={e => setReportForm({...reportForm, type: e.target.value})}
+                                <select
+                                    value={reportForm.type}
+                                    onChange={e => setReportForm({ ...reportForm, type: e.target.value })}
                                     style={{ width: '100%', padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid #cbd5e1', fontSize: '1rem' }}
                                 >
                                     <option value="Traffic Accident">Traffic Accident</option>
@@ -382,16 +470,16 @@ export default function CitizenDashboard() {
                                     <option value="Public Safety Issue">Public Safety Issue</option>
                                 </select>
                             </div>
-                            
+
                             <div>
                                 <label style={{ display: 'block', fontSize: '0.9rem', fontWeight: 600, color: '#475569', marginBottom: '0.5rem' }}>Approximate Location</label>
                                 <div style={{ display: 'flex', gap: '0.5rem' }}>
-                                    <input 
-                                        type="text" 
+                                    <input
+                                        type="text"
                                         required
                                         placeholder="e.g. Main St Bridge"
                                         value={reportForm.location}
-                                        onChange={e => setReportForm({...reportForm, location: e.target.value})}
+                                        onChange={e => setReportForm({ ...reportForm, location: e.target.value })}
                                         style={{ flex: 1, padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid #cbd5e1', fontSize: '1rem' }}
                                     />
                                     <button type="button" onClick={getGeolocation} style={{ padding: '0 1rem', background: '#f1f5f9', border: '1px solid #cbd5e1', borderRadius: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.25rem', cursor: 'pointer', color: '#475569', fontWeight: 600 }}>
@@ -402,11 +490,11 @@ export default function CitizenDashboard() {
 
                             <div>
                                 <label style={{ display: 'block', fontSize: '0.9rem', fontWeight: 600, color: '#475569', marginBottom: '0.5rem' }}>Short Description</label>
-                                <textarea 
+                                <textarea
                                     required
                                     placeholder="Describe the incident (e.g. Fallen tree blocking one lane)"
                                     value={reportForm.description}
-                                    onChange={e => setReportForm({...reportForm, description: e.target.value})}
+                                    onChange={e => setReportForm({ ...reportForm, description: e.target.value })}
                                     rows={3}
                                     style={{ width: '100%', padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid #cbd5e1', fontSize: '1rem', resize: 'vertical' }}
                                 />
@@ -414,11 +502,11 @@ export default function CitizenDashboard() {
 
                             <div>
                                 <label style={{ display: 'block', fontSize: '0.9rem', fontWeight: 600, color: '#475569', marginBottom: '0.5rem' }}>Photo Upload (Required)</label>
-                                <input 
-                                    type="file" 
+                                <input
+                                    type="file"
                                     required
                                     accept="image/*"
-                                    onChange={e => setReportForm({...reportForm, photo: e.target.files[0]})}
+                                    onChange={e => setReportForm({ ...reportForm, photo: e.target.files[0] })}
                                     style={{ width: '100%', padding: '0.5rem', border: '1px dashed #cbd5e1', borderRadius: '0.5rem', background: '#f8fafc' }}
                                 />
                                 <span style={{ fontSize: '0.75rem', color: '#94a3b8', marginTop: '0.25rem', display: 'block' }}>Helps prevent fraudulent reports.</span>

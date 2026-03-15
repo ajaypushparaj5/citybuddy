@@ -8,7 +8,11 @@ class DataIntegrationService {
         this.tickRate = 5000; // 5 seconds per tick
         this.cityBbox = null;
         this.cityEdges = [];
-        this.areaConfig = { bbox: null, params: { rainfall: 0, trafficDensity: 0 } };
+        this.areaConfig = {
+            bbox: null,
+            params: { rainfall: 0, trafficDensity: 0 },
+            resources: { ambulances: 50, fireTrucks: 20, policeUnits: 100, medicalPersonnel: 200, helicopters: 2, volunteers: 500, cityBudgetMil: 5 }
+        };
         this.manualSensorsQueue = [];
     }
 
@@ -56,17 +60,17 @@ class DataIntegrationService {
         // Filter and expose ONLY abnormal conditions to save LLM tokens and trigger targeted analysis
         const abnormalConditions = [];
         const p = this.areaConfig.params;
-        
+
         if (p.windSpeed > 60) abnormalConditions.push({ type: 'weather_wind', severity: p.windSpeed > 100 ? 'high' : 'medium', value: p.windSpeed, unit: 'km/h', desc: 'High wind speed' });
         if (p.temperature > 35) abnormalConditions.push({ type: 'weather_heat', severity: p.temperature > 42 ? 'high' : 'medium', value: p.temperature, unit: 'C', desc: 'Extreme heat' });
         if (p.temperature < -5) abnormalConditions.push({ type: 'weather_cold', severity: p.temperature < -15 ? 'high' : 'medium', value: p.temperature, unit: 'C', desc: 'Freezing temperatures' });
         if (p.fog > 0.5) abnormalConditions.push({ type: 'weather_fog', severity: 'medium', value: p.fog, unit: 'index', desc: 'Low visibility fog' });
         if (p.earthquake > 4.0) abnormalConditions.push({ type: 'crisis_earthquake', severity: p.earthquake > 6.5 ? 'high' : 'medium', value: p.earthquake, unit: 'Magnitude', desc: 'Earthquake detected' });
-        
+
         if (p.roadClosure) abnormalConditions.push({ type: 'transport_road_closure', severity: 'high', desc: 'Major road closure active' });
         if (p.publicTransportFailure) abnormalConditions.push({ type: 'transport_transit_failure', severity: 'high', desc: 'Public transit network failure' });
         if (p.accidentRate > 0.6) abnormalConditions.push({ type: 'transport_high_accidents', severity: 'medium', desc: 'Elevated accident rate' });
-        
+
         if (p.powerGridLoad > 90) abnormalConditions.push({ type: 'infra_grid_overload', severity: p.powerGridLoad > 110 ? 'high' : 'medium', value: p.powerGridLoad, unit: '%', desc: 'Power grid nearing capacity' });
         if (p.powerOutage) abnormalConditions.push({ type: 'infra_power_outage', severity: 'high', desc: 'Active blackout' });
         if (p.waterPressure < 40) abnormalConditions.push({ type: 'infra_low_water_pressure', severity: 'medium', value: p.waterPressure, unit: '%', desc: 'Low water pressure' });

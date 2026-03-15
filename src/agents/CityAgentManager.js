@@ -2,6 +2,7 @@ import { CityMonitorAgent } from './CityMonitorAgent';
 import { TrafficAgent } from './TrafficAgent';
 import { EmergencyAgent } from './EmergencyAgent';
 import { CrisisPredictionAgent } from './CrisisPredictionAgent';
+import { ResourceAgent } from './ResourceAgent';
 
 export class CityAgentManager {
     constructor() {
@@ -16,7 +17,7 @@ export class CityAgentManager {
         this.subscribers.add(callback);
         // Fire it immediately with current alerts state to populate UI
         callback(this.globalAlerts);
-        
+
         return () => {
             this.subscribers.delete(callback);
         };
@@ -76,3 +77,4 @@ agentManager.addAgent(new CityMonitorAgent());
 agentManager.addAgent(new TrafficAgent());
 agentManager.addAgent(new EmergencyAgent());
 agentManager.addAgent(new CrisisPredictionAgent());
+agentManager.addAgent(new ResourceAgent());

@@ -197,19 +197,32 @@ const TrafficVideo = ({ onStatsUpdate }) => {
     });
 
     return (
-        <div style={{ padding: '20px', width: '100%', display: 'flex', flexDirection: 'column' }}>
-            <h2>AI Traffic Video Tracking</h2>
-            <p style={{ marginBottom: '20px' }}>Upload a video to asynchronously track vehicles with YOLOv8.</p>
+        <div className="p-5 w-full flex flex-col">
+            <h2 className="text-xl font-bold mb-2 text-dark-text">AI Traffic Video Tracking</h2>
+            <p className="mb-5 text-slate-text">Upload a video to asynchronously track vehicles with YOLOv8.</p>
 
-            <div style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
-                <input type="file" accept="video/mp4,video/x-m4v,video/*" onChange={handleFileChange} />
-                <button onClick={handleUpload} disabled={!file || status === 'uploading' || status === 'queue' || status === 'processing'} style={{ padding: '8px 16px', background: 'var(--accent-blue)', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
+            <div className="flex gap-2.5 mb-5 items-center">
+                <input 
+                    type="file" 
+                    accept="video/mp4,video/x-m4v,video/*" 
+                    onChange={handleFileChange}
+                    className="text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-slate-bg file:text-brand-blue hover:file:bg-slate-200"
+                />
+                <button 
+                    onClick={handleUpload} 
+                    disabled={!file || status === 'uploading' || status === 'queue' || status === 'processing'} 
+                    className="px-4 py-2 bg-brand-blue text-white rounded-md text-sm font-medium cursor-pointer transition-colors hover:bg-blue-700 disabled:bg-blue-300 disabled:cursor-not-allowed"
+                >
                     Upload & Process
                 </button>
             </div>
 
-            <div style={{ background: '#e2e8f0', padding: '10px', borderRadius: '4px', marginBottom: '20px' }}>
-                <strong>Status: </strong>
+            <div className={`p-3 rounded-md mb-5 text-sm font-medium border ${
+                status === 'completed' ? 'bg-green-50 border-green-200 text-green-800' :
+                status === 'error' ? 'bg-red-50 border-red-200 text-red-800' :
+                'bg-slate-100 border-slate-200 text-slate-700'
+            }`}>
+                <span className="font-bold">Status: </span>
                 {status === 'idle' && 'Waiting.'}
                 {status === 'uploading' && 'Uploading video to server...'}
                 {status === 'queue' && 'In Queue. Waiting for Python worker...'}
@@ -219,21 +232,16 @@ const TrafficVideo = ({ onStatsUpdate }) => {
             </div>
 
             {status === 'completed' && videoUrl && (
-                <div style={{ position: 'relative', width: '100%', maxWidth: '800px', backgroundColor: 'black', borderRadius: '8px', overflow: 'hidden', border: '1px solid var(--border-subtle)' }}>
+                <div className="relative w-full max-w-[800px] bg-black rounded-lg overflow-hidden border border-border-subtle">
                     <video
                         ref={videoRef}
                         src={videoUrl}
                         controls
-                        style={{ width: '100%', display: 'block' }}
+                        className="w-full block"
                     />
                     <canvas
                         ref={canvasRef}
-                        style={{
-                            position: 'absolute',
-                            top: 0, left: 0,
-                            width: '100%', height: '100%',
-                            pointerEvents: 'none'
-                        }}
+                        className="absolute inset-0 w-full h-full pointer-events-none"
                     />
                 </div>
             )}

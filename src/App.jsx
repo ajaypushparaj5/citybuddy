@@ -8,9 +8,9 @@ import './index.css';
 function App() {
   return (
     <Router>
-      <div className="min-h-screen bg-bg-primary flex flex-col">
+      <div className="min-h-screen bg-slate-bg flex flex-col">
         <Navbar />
-        <div className="flex-1 relative">
+        <div className="flex h-full w-screen overflow-hidden">
           <Routes>
             <Route path="/" element={<DigitalTwin />} />
             <Route path="/traffic" element={<Traffic />} />

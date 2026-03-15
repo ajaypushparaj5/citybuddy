@@ -25,7 +25,7 @@ function DigitalTwin() {
   };
 
   return (
-    <div className="app-container">
+    <div className="flex h-full w-screen overflow-hidden">
       <Sidebar
         onSubmit={handleCitySubmit}
         isLoading={isLoading}
@@ -33,24 +33,17 @@ function DigitalTwin() {
         cityData={cityData}
       />
 
-      <div className="map-container">
+      <div className="flex-1 relative bg-slate-200 overflow-y-auto overflow-x-hidden">
         {isLoading && (
-          <div style={{
-            position: 'absolute', inset: 0, display: 'flex',
-            alignItems: 'center', justifyContent: 'center',
-            backgroundColor: 'rgba(248, 250, 252, 0.8)', zIndex: 50
-          }}>
-            <div style={{ color: 'var(--accent-blue)', fontWeight: 600 }}>Extracting Infrastructure...</div>
+          <div className="absolute inset-0 flex items-center justify-center bg-slate-bg/80 z-50">
+            <div className="text-brand-blue font-semibold">Extracting Infrastructure...</div>
           </div>
         )}
 
         {cityData ? (
           <CityTwinEngine data={cityData} />
         ) : (
-          <div style={{
-            height: '100%', display: 'flex', alignItems: 'center',
-            justifyContent: 'center', color: 'var(--text-secondary)'
-          }}>
+          <div className="h-full flex items-center justify-center text-text-secondary">
             <p>Select a region to generate a Digital Twin.</p>
           </div>
         )}

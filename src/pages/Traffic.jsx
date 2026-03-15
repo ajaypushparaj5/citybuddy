@@ -10,58 +10,63 @@ function Traffic() {
     });
 
     return (
-        <div className="app-container">
-            <div className="sidebar" style={{ display: 'flex', flexDirection: 'column', overflowY: 'auto' }}>
-                <div style={{ padding: '20px', color: 'var(--text-secondary)' }}>
-                    <h3 style={{ marginBottom: '10px', color: 'var(--text-primary)' }}>Traffic AI Tracking</h3>
-                    <p style={{ fontSize: '0.9rem', lineHeight: '1.5', marginBottom: '20px' }}>
+        <div className="flex h-full w-screen overflow-hidden">
+            <div className="w-[400px] bg-white-bg border-r border-subtle-border shadow-sm flex flex-col z-10 h-full overflow-y-auto">
+                <div className="p-5 text-slate-text">
+                    <h3 className="mb-2.5 text-dark-text">Traffic AI Tracking</h3>
+                    <p className="text-sm leading-6 mb-5">
                         Upload your traffic camera footage on the right to asynchronously process it through the Python YOLO model.
                     </p>
 
-                    <h2 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '1rem', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '0.5rem', color: 'var(--text-primary)' }}>Live Tracking Analysis</h2>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                        <div className="status-card" style={{
-                            backgroundColor: trafficStats.congestionLevel === 'HIGH' ? '#fee2e2' : trafficStats.congestionLevel === 'MODERATE' ? '#fef3c7' : trafficStats.congestionLevel === 'LOW' ? '#dcfce7' : '#f1f5f9',
-                            border: '1px solid',
-                            borderColor: trafficStats.congestionLevel === 'HIGH' ? '#fecaca' : trafficStats.congestionLevel === 'MODERATE' ? '#fde68a' : trafficStats.congestionLevel === 'LOW' ? '#bbf7d0' : '#e2e8f0',
-                        }}>
-                            <h3 style={{ color: trafficStats.congestionLevel === 'HIGH' ? '#991b1b' : trafficStats.congestionLevel === 'MODERATE' ? '#92400e' : trafficStats.congestionLevel === 'LOW' ? '#166534' : 'var(--text-secondary)' }}>Live Congestion</h3>
-                            <div className="status-value" style={{
-                                color: trafficStats.congestionLevel === 'HIGH' ? '#991b1b' : trafficStats.congestionLevel === 'MODERATE' ? '#92400e' : trafficStats.congestionLevel === 'LOW' ? '#166534' : 'var(--text-primary)',
-                                fontSize: '1.25rem'
-                            }}>
+                    <h2 className="text-base font-semibold mb-4 border-b border-subtle-border pb-2 text-dark-text">Live Tracking Analysis</h2>
+                    <div className="flex flex-col gap-3">
+                        <div className={`p-4 border rounded-lg ${
+                            trafficStats.congestionLevel === 'HIGH' ? 'bg-red-100 border-red-200' : 
+                            trafficStats.congestionLevel === 'MODERATE' ? 'bg-amber-100 border-amber-200' : 
+                            trafficStats.congestionLevel === 'LOW' ? 'bg-green-100 border-green-200' : 'bg-slate-100 border-slate-200'
+                        }`}>
+                            <h3 className={`text-xs uppercase tracking-wider mb-2 font-medium ${
+                                trafficStats.congestionLevel === 'HIGH' ? 'text-red-800' : 
+                                trafficStats.congestionLevel === 'MODERATE' ? 'text-amber-800' : 
+                                trafficStats.congestionLevel === 'LOW' ? 'text-green-800' : 'text-slate-text'
+                            }`}>Live Congestion</h3>
+                            <div className={`text-2xl font-bold ${
+                                trafficStats.congestionLevel === 'HIGH' ? 'text-red-800' : 
+                                trafficStats.congestionLevel === 'MODERATE' ? 'text-amber-800' : 
+                                trafficStats.congestionLevel === 'LOW' ? 'text-green-800' : 'text-dark-text'
+                            }`}>
                                 {trafficStats.congestionLevel}
                             </div>
                         </div>
 
-                        <div className="status-card">
-                            <h3>Vehicles Detected</h3>
-                            <div className="status-value">{trafficStats.vehicleCount}</div>
+                        <div className="bg-white border border-subtle-border rounded-lg p-4 shadow-sm">
+                            <h3 className="text-xs uppercase tracking-wider text-slate-text mb-2 font-medium">Vehicles Detected</h3>
+                            <div className="text-2xl font-bold text-dark-text">{trafficStats.vehicleCount}</div>
                         </div>
                     </div>
 
-                    <h2 style={{ fontSize: '1rem', fontWeight: 600, marginTop: '2rem', marginBottom: '1rem', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '0.5rem', color: 'var(--text-primary)' }}>AI Response Agent</h2>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                    <h2 className="text-base font-semibold mt-8 mb-4 border-b border-subtle-border pb-2 text-dark-text">AI Response Agent</h2>
+                    <div className="flex flex-col gap-3">
 
                         {trafficStats.incidentPayload ? (
                             <>
-                                <div style={{ backgroundColor: '#1e293b', color: '#38bdf8', padding: '15px', borderRadius: '6px', fontFamily: 'monospace', fontSize: '0.85rem', overflowX: 'auto' }}>
-                                    <h4 style={{ color: '#94a3b8', fontSize: '0.75rem', marginBottom: '10px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Event Output</h4>
-                                    <pre style={{ margin: 0, whiteSpace: 'pre-wrap' }}>
+                                <div className="bg-slate-800 text-sky-400 p-4 rounded-md font-mono text-xs overflow-x-auto">
+                                    <h4 className="text-slate-400 text-[0.7rem] mb-2.5 uppercase tracking-widest">Event Output</h4>
+                                    <pre className="m-0 whitespace-pre-wrap">
                                         {JSON.stringify(trafficStats.incidentPayload, null, 2)}
                                     </pre>
                                 </div>
 
-                                <div style={{ backgroundColor: '#1e293b', color: '#4ade80', padding: '15px', borderRadius: '6px', fontFamily: 'monospace', fontSize: '0.85rem', overflowX: 'auto', marginTop: '10px' }}>
-                                    <h4 style={{ color: '#94a3b8', fontSize: '0.75rem', marginBottom: '10px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Decision Matrix Output</h4>
-                                    <pre style={{ margin: 0, whiteSpace: 'pre-wrap' }}>
+                                <div className="bg-slate-800 text-emerald-400 p-4 rounded-md font-mono text-xs overflow-x-auto mt-2.5">
+                                    <h4 className="text-slate-400 text-[0.7rem] mb-2.5 uppercase tracking-widest">Decision Matrix Output</h4>
+                                    <pre className="m-0 whitespace-pre-wrap">
                                         {JSON.stringify(trafficStats.recommendationPayload, null, 2)}
                                     </pre>
                                 </div>
                             </>
                         ) : (
-                            <div className="status-card" style={{ backgroundColor: '#f0fdf4', borderColor: '#bbf7d0' }}>
-                                <div style={{ fontSize: '0.9rem', color: '#166534', fontWeight: 500 }}>
+                            <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+                                <div className="text-sm text-green-800 font-medium">
                                     System is operating normally. Traffic flow is within acceptable margins.
                                 </div>
                             </div>
@@ -70,7 +75,7 @@ function Traffic() {
                 </div>
             </div>
 
-            <div className="map-container">
+            <div className="flex-1 relative bg-slate-200 overflow-y-auto overflow-x-hidden">
                 <TrafficVideo onStatsUpdate={setTrafficStats} />
             </div>
         </div>

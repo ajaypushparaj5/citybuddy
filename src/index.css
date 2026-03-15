@@ -1,176 +1,162 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import "tailwindcss";
 
-:root {
-  /* Clean Light Theme Palette */
-  --bg-primary: #f8fafc;
-  --bg-surface: #ffffff;
-  --text-primary: #0f172a;
-  --text-secondary: #475569;
+@theme {
+  --font-inter: "Inter", system-ui, -apple-system, sans-serif;
+  --font-lora: "Lora", serif;
+  --font-cormorant: "Cormorant Garamond", serif;
+  --font-space: "Space Grotesk", sans-serif;
+
+  --color-bg-primary: #f8fafc;
+  --color-bg-surface: #ffffff;
+  --color-text-primary: #0f172a;
+  --color-text-secondary: #475569;
+
+  --color-accent-blue: #2563eb;
+  --color-accent-teal: #0d9488;
+  --color-accent-red: #dc2626;
+  --color-accent-orange: #ea580c;
+
+  --color-primary-dark: #0f172a;
+  --color-secondary-dark: #1e293b;
+  --color-brand-indigo: #6366f1;
+  --color-surface-white: #f8f9fa;
+  --color-text-slate: #94a3b8;
   
-  /* Accent Colors (No gradients, solid crisp colors) */
-  --accent-blue: #2563eb;
-  --accent-teal: #0d9488;
-  --accent-red: #dc2626;
-  --accent-orange: #ea580c;
-  
-  /* Borders & Shadows */
-  --border-subtle: #e2e8f0;
+  --shadow-glass: 0 4px 30px rgba(0, 0, 0, 0.1);
   --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
   --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05);
   --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.05), 0 4px 6px -4px rgb(0 0 0 / 0.05);
+
+  --color-border-subtle: #e2e8f0;
 }
 
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
+/* Custom Components / Utilities */
+@layer components {
+  .app-container {
+    @apply flex h-full w-screen overflow-hidden;
+  }
+
+  .sidebar {
+    @apply w-[400px] bg-bg-surface border-r border-border-subtle shadow-sm flex flex-col z-10;
+  }
+
+  .sidebar-header {
+    @apply p-6 border-b border-border-subtle;
+  }
+
+  .sidebar-header h1 {
+    @apply text-xl font-semibold tracking-tight flex items-center gap-2;
+  }
+
+  .sidebar-content {
+    @apply p-6 flex-1 overflow-y-auto;
+  }
+
+  .input-group {
+    @apply mb-6;
+  }
+
+  .label {
+    @apply block text-sm font-medium mb-2 text-text-secondary;
+  }
+
+  .input {
+    @apply w-full px-4 py-3 border border-border-subtle rounded-lg text-sm bg-bg-surface transition-all duration-200;
+  }
+
+  .input:focus {
+    @apply outline-none border-accent-blue shadow-[0_0_0_3px_rgba(37,99,235,0.1)];
+  }
+
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 w-full px-6 py-3 bg-accent-blue text-white border-none rounded-lg text-sm font-medium cursor-pointer transition-all duration-200;
+  }
+
+  .btn:hover {
+    @apply bg-[#1d4ed8];
+  }
+
+  .btn:disabled {
+    @apply bg-[#93c5fd] cursor-not-allowed;
+  }
+
+  .map-container {
+    @apply flex-1 relative bg-slate-200 overflow-y-auto overflow-x-hidden;
+  }
+
+  .deck-tooltip {
+    @apply absolute pointer-events-none bg-bg-surface text-text-primary p-3 rounded-lg shadow-md border border-border-subtle text-sm font-medium z-100 -translate-x-1/2 -translate-y-full -mt-[10px];
+  }
+
+  .status-card {
+    @apply bg-bg-primary border border-border-subtle rounded-lg p-4 mt-4;
+  }
+
+  .status-card h3 {
+    @apply text-[0.75rem] uppercase tracking-wider text-text-secondary mb-2;
+  }
+
+  .status-value {
+    @apply text-2xl font-bold text-text-primary;
+  }
+
+  /* Premium Utilities */
+  .glass-soft {
+    @apply bg-white/5 backdrop-blur-md border border-white/10;
+  }
+  
+  .glass-strong {
+    @apply bg-slate-800/70 backdrop-blur-lg border border-white/10 shadow-glass;
+  }
+
+  .text-gradient {
+    @apply bg-linear-to-r from-indigo-500 to-purple-500 bg-clip-text text-transparent;
+  }
+
+  .hero-gradient {
+    background: radial-gradient(circle at center, #1e293b 0%, #0f172a 100%);
+  }
+
+  .grid-overlay {
+    background-image: linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px), 
+                      linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px);
+    background-size: 40px 40px;
+    mask-image: radial-gradient(ellipse at center, black, transparent);
+  }
+
+  .rotate-180-hover:hover .icon-to-rotate {
+    @apply duration-500 ease-out;
+    transform: rotate(180deg);
+  }
+
+  @keyframes infinite-scroll {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
+
+  .animate-infinite-scroll {
+    animation: infinite-scroll 25s linear infinite;
+  }
 }
 
-body {
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
-  background-color: var(--bg-primary);
-  color: var(--text-primary);
-  line-height: 1.5;
-  -webkit-font-smoothing: antialiased;
+
+/* Typing Cursor Utility */
+@utility typing-cursor {
+  &::after {
+    @apply content-['|'] ml-1 animate-pulse;
+  }
 }
 
-/* Base UI Components */
-.app-container {
-  display: flex;
-  height: 100vh;
-  width: 100vw;
-  overflow: hidden;
-}
+/* Legacy Support / Specific Overrides */
+@layer base {
+  * {
+    @apply box-border;
+    margin: 0;
+    padding: 0;
+  }
 
-.sidebar {
-  width: 400px;
-  background-color: var(--bg-surface);
-  border-right: 1px solid var(--border-subtle);
-  box-shadow: var(--shadow-sm);
-  display: flex;
-  flex-direction: column;
-  z-index: 10;
-}
-
-.sidebar-header {
-  padding: 1.5rem;
-  border-bottom: 1px solid var(--border-subtle);
-}
-
-.sidebar-header h1 {
-  font-size: 1.25rem;
-  font-weight: 600;
-  letter-spacing: -0.025em;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.sidebar-content {
-  padding: 1.5rem;
-  flex: 1;
-  overflow-y: auto;
-}
-
-/* Form Elements */
-.input-group {
-  margin-bottom: 1.5rem;
-}
-
-.label {
-  display: block;
-  font-size: 0.875rem;
-  font-weight: 500;
-  margin-bottom: 0.5rem;
-  color: var(--text-secondary);
-}
-
-.input {
-  width: 100%;
-  padding: 0.75rem 1rem;
-  border: 1px solid var(--border-subtle);
-  border-radius: 0.5rem;
-  font-size: 0.875rem;
-  background-color: var(--bg-surface);
-  transition: all 0.2s ease;
-  font-family: inherit;
-}
-
-.input:focus {
-  outline: none;
-  border-color: var(--accent-blue);
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
-}
-
-.btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  width: 100%;
-  padding: 0.75rem 1.5rem;
-  background-color: var(--accent-blue);
-  color: white;
-  border: none;
-  border-radius: 0.5rem;
-  font-size: 0.875rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background-color 0.2s ease;
-}
-
-.btn:hover {
-  background-color: #1d4ed8;
-}
-
-.btn:disabled {
-  background-color: #93c5fd;
-  cursor: not-allowed;
-}
-
-/* Map Container */
-.map-container {
-  flex: 1;
-  position: relative;
-  background-color: #e5e7eb; /* Fallback map background */
-}
-
-/* Custom DeckGL Tooltip Styling */
-.deck-tooltip {
-  position: absolute;
-  pointer-events: none;
-  background: var(--bg-surface);
-  color: var(--text-primary);
-  padding: 0.75rem;
-  border-radius: 0.5rem;
-  box-shadow: var(--shadow-md);
-  border: 1px solid var(--border-subtle);
-  font-size: 0.875rem;
-  font-weight: 500;
-  z-index: 100;
-  transform: translate(-50%, -100%);
-  margin-top: -10px;
-}
-
-/* Card styled status indicators */
-.status-card {
-  background: var(--bg-primary);
-  border: 1px solid var(--border-subtle);
-  border-radius: 0.5rem;
-  padding: 1rem;
-  margin-top: 1rem;
-}
-
-.status-card h3 {
-  font-size: 0.75rem;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--text-secondary);
-  margin-bottom: 0.5rem;
-}
-
-.status-value {
-  font-size: 1.5rem;
-  font-weight: 600;
-  color: var(--text-primary);
+  body {
+    @apply font-inter bg-bg-primary text-text-primary antialiased leading-relaxed;
+  }
 }

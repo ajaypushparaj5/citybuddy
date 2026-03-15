@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import TrafficVideo from '../components/TrafficVideo';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Activity, Car, AlertCircle, Cpu, ClipboardList, ShieldCheck } from 'lucide-react';
 
 function Traffic() {
     const [trafficStats, setTrafficStats] = useState({
@@ -10,69 +12,132 @@ function Traffic() {
     });
 
     return (
-        <div className="app-container">
-            <div className="sidebar" style={{ display: 'flex', flexDirection: 'column', overflowY: 'auto' }}>
-                <div style={{ padding: '20px', color: 'var(--text-secondary)' }}>
-                    <h3 style={{ marginBottom: '10px', color: 'var(--text-primary)' }}>Traffic AI Tracking</h3>
-                    <p style={{ fontSize: '0.9rem', lineHeight: '1.5', marginBottom: '20px' }}>
-                        Upload your traffic camera footage on the right to asynchronously process it through the Python YOLO model.
-                    </p>
-
-                    <h2 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '1rem', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '0.5rem', color: 'var(--text-primary)' }}>Live Tracking Analysis</h2>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                        <div className="status-card" style={{
-                            backgroundColor: trafficStats.congestionLevel === 'HIGH' ? '#fee2e2' : trafficStats.congestionLevel === 'MODERATE' ? '#fef3c7' : trafficStats.congestionLevel === 'LOW' ? '#dcfce7' : '#f1f5f9',
-                            border: '1px solid',
-                            borderColor: trafficStats.congestionLevel === 'HIGH' ? '#fecaca' : trafficStats.congestionLevel === 'MODERATE' ? '#fde68a' : trafficStats.congestionLevel === 'LOW' ? '#bbf7d0' : '#e2e8f0',
-                        }}>
-                            <h3 style={{ color: trafficStats.congestionLevel === 'HIGH' ? '#991b1b' : trafficStats.congestionLevel === 'MODERATE' ? '#92400e' : trafficStats.congestionLevel === 'LOW' ? '#166534' : 'var(--text-secondary)' }}>Live Congestion</h3>
-                            <div className="status-value" style={{
-                                color: trafficStats.congestionLevel === 'HIGH' ? '#991b1b' : trafficStats.congestionLevel === 'MODERATE' ? '#92400e' : trafficStats.congestionLevel === 'LOW' ? '#166534' : 'var(--text-primary)',
-                                fontSize: '1.25rem'
-                            }}>
-                                {trafficStats.congestionLevel}
-                            </div>
+        <div className="flex h-[calc(100vh-64px)] bg-[#F8FAFC] font-inter text-[#1E293B] overflow-hidden">
+            {/* Sidebar */}
+            <div className="w-[380px] bg-white border-r border-slate-200 flex flex-col h-full shadow-sm z-20">
+                <div className="p-6 border-b border-slate-100">
+                    <div className="flex items-center gap-3 mb-2">
+                        <div className="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center text-white shadow-lg shadow-indigo-100">
+                            <Activity size={20} />
                         </div>
+                        <h1 className="text-xl font-bold tracking-tight text-slate-900">Traffic AI Engine</h1>
+                    </div>
+                    <p className="text-sm text-slate-500 leading-relaxed font-medium">
+                        Real-time flow analysis and spatial intelligence.
+                    </p>
+                </div>
 
-                        <div className="status-card">
-                            <h3>Vehicles Detected</h3>
-                            <div className="status-value">{trafficStats.vehicleCount}</div>
+                <div className="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar">
+                    {/* Live Analysis */}
+                    <div>
+                        <h2 className="text-[0.7rem] font-bold uppercase tracking-[0.15em] text-slate-400 mb-4 flex items-center gap-2">
+                            <Cpu size={14} /> Neural Tracking Data
+                        </h2>
+                        
+                        <div className="grid gap-3">
+                            <motion.div 
+                                whileHover={{ y: -2 }}
+                                className={`p-5 rounded-2xl border transition-all duration-300 shadow-sm ${
+                                    trafficStats.congestionLevel === 'HIGH' ? 'bg-rose-50 border-rose-100' :
+                                    trafficStats.congestionLevel === 'MODERATE' ? 'bg-amber-50 border-amber-100' :
+                                    trafficStats.congestionLevel === 'LOW' ? 'bg-emerald-50 border-emerald-100' :
+                                    'bg-slate-50 border-slate-100'
+                                }`}
+                            >
+                                <div className="flex justify-between items-start mb-3">
+                                    <h3 className="text-[0.65rem] font-bold text-slate-500 uppercase tracking-widest">Congestion Index</h3>
+                                    <div className={`w-2 h-2 rounded-full animate-pulse ${
+                                        trafficStats.congestionLevel === 'HIGH' ? 'bg-rose-500 shadow-[0_0_8px_#f43f5e]' :
+                                        trafficStats.congestionLevel === 'MODERATE' ? 'bg-amber-500 shadow-[0_0_8px_#f59e0b]' :
+                                        trafficStats.congestionLevel === 'LOW' ? 'bg-emerald-500 shadow-[0_0_8px_#10b981]' :
+                                        'bg-slate-300'
+                                    }`} />
+                                </div>
+                                <div className={`text-3xl font-bold tracking-tight ${
+                                    trafficStats.congestionLevel === 'HIGH' ? 'text-rose-700' :
+                                    trafficStats.congestionLevel === 'MODERATE' ? 'text-amber-700' :
+                                    trafficStats.congestionLevel === 'LOW' ? 'text-emerald-700' :
+                                    'text-slate-900'
+                                }`}>
+                                    {trafficStats.congestionLevel}
+                                </div>
+                            </motion.div>
+
+                            <motion.div 
+                                whileHover={{ y: -2 }}
+                                className="p-5 rounded-2xl bg-white border border-slate-100 shadow-sm"
+                            >
+                                <h3 className="text-[0.65rem] font-bold text-slate-500 uppercase tracking-widest mb-3">Detected Vehicles</h3>
+                                <div className="flex items-baseline gap-2">
+                                    <span className="text-3xl font-bold text-slate-900">{trafficStats.vehicleCount}</span>
+                                    <span className="text-[0.65rem] font-bold text-indigo-500 uppercase tracking-tight">Active Nodes</span>
+                                </div>
+                            </motion.div>
                         </div>
                     </div>
 
-                    <h2 style={{ fontSize: '1rem', fontWeight: 600, marginTop: '2rem', marginBottom: '1rem', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '0.5rem', color: 'var(--text-primary)' }}>AI Response Agent</h2>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                    {/* AI Response */}
+                    <div>
+                        <h2 className="text-[0.7rem] font-bold uppercase tracking-[0.15em] text-slate-400 mb-4 flex items-center gap-2">
+                            <ClipboardList size={14} /> Response Matrix
+                        </h2>
 
-                        {trafficStats.incidentPayload ? (
-                            <>
-                                <div style={{ backgroundColor: '#1e293b', color: '#38bdf8', padding: '15px', borderRadius: '6px', fontFamily: 'monospace', fontSize: '0.85rem', overflowX: 'auto' }}>
-                                    <h4 style={{ color: '#94a3b8', fontSize: '0.75rem', marginBottom: '10px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Event Output</h4>
-                                    <pre style={{ margin: 0, whiteSpace: 'pre-wrap' }}>
-                                        {JSON.stringify(trafficStats.incidentPayload, null, 2)}
-                                    </pre>
-                                </div>
+                        <AnimatePresence mode="wait">
+                            {trafficStats.incidentPayload ? (
+                                <div className="space-y-4">
+                                    <motion.div 
+                                        initial={{ opacity: 0, y: 10 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        className="bg-slate-900 p-5 rounded-2xl shadow-lg border border-slate-800"
+                                    >
+                                        <h4 className="text-[0.6rem] font-bold text-indigo-400 uppercase tracking-[0.1em] mb-3">Live Payload</h4>
+                                        <pre className="text-[0.7rem] text-slate-400 font-mono whitespace-pre-wrap leading-relaxed max-h-[120px] overflow-y-auto custom-scrollbar">
+                                            {JSON.stringify(trafficStats.incidentPayload, null, 2)}
+                                        </pre>
+                                    </motion.div>
 
-                                <div style={{ backgroundColor: '#1e293b', color: '#4ade80', padding: '15px', borderRadius: '6px', fontFamily: 'monospace', fontSize: '0.85rem', overflowX: 'auto', marginTop: '10px' }}>
-                                    <h4 style={{ color: '#94a3b8', fontSize: '0.75rem', marginBottom: '10px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Decision Matrix Output</h4>
-                                    <pre style={{ margin: 0, whiteSpace: 'pre-wrap' }}>
-                                        {JSON.stringify(trafficStats.recommendationPayload, null, 2)}
-                                    </pre>
+                                    <motion.div 
+                                        initial={{ opacity: 0, y: 10 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        transition={{ delay: 0.1 }}
+                                        className="bg-slate-900 p-5 rounded-2xl shadow-lg border-l-4 border-indigo-500"
+                                    >
+                                        <h4 className="text-[0.6rem] font-bold text-slate-200 uppercase tracking-[0.1em] mb-3">AI Strategy</h4>
+                                        <pre className="text-[0.7rem] text-slate-400 font-mono whitespace-pre-wrap leading-relaxed max-h-[120px] overflow-y-auto custom-scrollbar">
+                                            {JSON.stringify(trafficStats.recommendationPayload, null, 2)}
+                                        </pre>
+                                    </motion.div>
                                 </div>
-                            </>
-                        ) : (
-                            <div className="status-card" style={{ backgroundColor: '#f0fdf4', borderColor: '#bbf7d0' }}>
-                                <div style={{ fontSize: '0.9rem', color: '#166534', fontWeight: 500 }}>
-                                    System is operating normally. Traffic flow is within acceptable margins.
-                                </div>
-                            </div>
-                        )}
+                            ) : (
+                                <motion.div 
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    className="p-5 rounded-2xl bg-slate-50 border border-slate-100 flex gap-4 items-center"
+                                >
+                                    <div className="p-3 bg-white rounded-xl text-indigo-600 shadow-sm border border-slate-100">
+                                        <ShieldCheck size={24} />
+                                    </div>
+                                    <div className="text-sm font-semibold text-slate-500 italic">
+                                        System optimized. No congestion detected.
+                                    </div>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
                     </div>
                 </div>
             </div>
 
-            <div className="map-container">
+            {/* Main Content Area */}
+            <div className="flex-1 bg-[#F8FAFC]">
                 <TrafficVideo onStatsUpdate={setTrafficStats} />
             </div>
+
+            <style>{`
+                .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+                .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+                .custom-scrollbar::-webkit-scrollbar-thumb { background: #6366f122; border-radius: 10px; }
+                .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #6366f144; }
+            `}</style>
         </div>
     );
 }

@@ -12,7 +12,8 @@ export class EmergencyAgent extends BaseAgent {
 
     // This agent might be called directly by the Manager when another agent emits an alert
     handleIncident(alert) {
-        if (alert.type === 'accident' || alert.type === 'flood' || alert.type === 'flood_warning') {
+        // Handle all critical alerts that require an emergency response
+        if (alert.type && !alert.no_risk) {
             // Key by type + approximate location (1 decimal place ≈ 11km grid) so that
             // selecting a DIFFERENT area always triggers a fresh response, but the same
             // area doesn't spam the LLM every 30s.
@@ -57,9 +58,8 @@ export class EmergencyAgent extends BaseAgent {
             Type: ${alert.type} | Severity: ${alert.severity}
 
             Based on the available infrastructure options and the current abnormal city conditions (weather, transport, infrastructure failures), decide the best response.
-            - For a flood/flood_warning: prioritise shelter establishment at a school, or dispatch rescue from nearest emergency station. Consider road closures or bad weather if active.
-            - For an accident: dispatch ambulance from nearest hospital.
-            - For any type: also recommend any police coordination if needed.
+            - Analyze the alert type (${alert.type}) and determine if it requires a medical, fire, police, or shelter-based response.
+            - Consider current hazards (like bad weather or road closures) when directing units.
 
             Return ONLY this JSON:
             {

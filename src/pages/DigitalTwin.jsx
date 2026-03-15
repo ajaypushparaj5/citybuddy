@@ -8,6 +8,7 @@ import { agentManager } from '../agents/CityAgentManager';
 
 function DigitalTwin() {
   const [cityData, setCityData] = useState(null);
+  const [cityName, setCityName] = useState('');
   const [elevationSamples, setElevation] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -42,13 +43,16 @@ function DigitalTwin() {
 
   const [agentStates, setAgentStates] = useState([]);
 
-  const handleCitySubmit = async (cityName) => {
+  const handleCitySubmit = async (submittedName) => {
     setIsLoading(true);
     setError(null);
     setElevation(null);
+    setCityName(submittedName);
     try {
       // 1. Fetch city graph (roads, nodes, infrastructure)
-      const data = await fetchCityData(cityName);
+      const data = await fetchCityData(submittedName);
+      // Attach name to data for downstream consumers
+      data.name = submittedName;
       setCityData(data);
 
       // 2. Fetch elevation grid in the background (non-blocking UX)
@@ -107,6 +111,7 @@ function DigitalTwin() {
         isLoading={isLoading}
         error={error}
         cityData={cityData}
+        cityName={cityName}
         showElevation={showElevation}
         setShowElevation={setShowElevation}
         showBuildings={showBuildings}

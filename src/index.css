@@ -22,7 +22,7 @@
   --color-brand-indigo: #6366f1;
   --color-surface-white: #f8f9fa;
   --color-text-slate: #94a3b8;
-  
+
   --shadow-glass: 0 4px 30px rgba(0, 0, 0, 0.1);
   --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
   --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05);
@@ -66,7 +66,7 @@
   }
 
   .input:focus {
-    @apply outline-none border-accent-blue shadow-[0_0_0_3px_rgba(37,99,235,0.1)];
+    @apply outline-none border-accent-blue;
   }
 
   .btn {
@@ -105,7 +105,7 @@
   .glass-soft {
     @apply bg-white/5 backdrop-blur-md border border-white/10;
   }
-  
+
   .glass-strong {
     @apply bg-slate-800/70 backdrop-blur-lg border border-white/10 shadow-glass;
   }
@@ -119,8 +119,8 @@
   }
 
   .grid-overlay {
-    background-image: linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px), 
-                      linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px);
+    background-image: linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
     background-size: 40px 40px;
     mask-image: radial-gradient(ellipse at center, black, transparent);
   }
@@ -131,8 +131,13 @@
   }
 
   @keyframes infinite-scroll {
-    from { transform: translateX(0); }
-    to { transform: translateX(-50%); }
+    from {
+      transform: translateX(0);
+    }
+
+    to {
+      transform: translateX(-50%);
+    }
   }
 
   .animate-infinite-scroll {

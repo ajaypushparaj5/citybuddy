@@ -27,7 +27,7 @@ function renderMarkdown(text) {
         .replace(/\n/g, '<br/>');
 }
 
-export default function ActionPlanModal({ alert, cityData, sensorData, elevationSamples, onClose }) {
+export default function ActionPlanModal({ alert, cityData, cityName, sensorData, elevationSamples, onClose }) {
     const [plan, setPlan] = useState(null);
     const [source, setSource] = useState(null);
     const [loading, setLoading] = useState(false);
@@ -56,17 +56,94 @@ export default function ActionPlanModal({ alert, cityData, sensorData, elevation
 
     const [isPublished, setIsPublished] = useState(false);
 
-    const handlePublish = () => {
+    const handlePublish = async () => {
         if (!plan) return;
-        localStorage.setItem('citybuddy_published_action_plan', JSON.stringify({
-            alertType: alert.type,
-            alertMessage: alert.message,
-            timestamp: Date.now(),
-            plan: plan,
-            source: source
-        }));
-        setIsPublished(true);
-        setTimeout(() => setIsPublished(false), 3000);
+
+        try {
+            // Import Supabase dynamically or at top level (assuming top level for now)
+            const { supabase } = await import('../services/supabaseClient.js');
+
+            // Build the comprehensive payload for the Query Engine
+            const queryEngineFeeder = {
+                calamity: {
+                    type: alert.type,
+                    message: alert.message,
+                    location: {
+                        lat: alert.lat,
+                        lon: alert.lon
+                    }
+                },
+                weatherAndEnvironment: {
+                    temperature: sensorData?.areaConfig?.params?.temperature,
+                    windSpeed: sensorData?.areaConfig?.params?.windSpeed,
+                    rainfall: sensorData?.areaConfig?.params?.rainfall,
+                    fog: sensorData?.areaConfig?.params?.fog,
+                    earthquake: sensorData?.areaConfig?.params?.earthquake,
+                    airQuality: sensorData?.areaConfig?.params?.airQuality
+                },
+                infrastructureAndTransport: {
+                    powerGridLoad: sensorData?.areaConfig?.params?.powerGridLoad,
+                    powerOutage: sensorData?.areaConfig?.params?.powerOutage,
+                    waterPressure: sensorData?.areaConfig?.params?.waterPressure,
+                    cellTowerCongestion: sensorData?.areaConfig?.params?.cellTowerCongestion,
+                    trafficDensity: sensorData?.areaConfig?.params?.trafficDensity,
+                    roadClosure: sensorData?.areaConfig?.params?.roadClosure,
+                    publicTransportFailure: sensorData?.areaConfig?.params?.publicTransportFailure
+                },
+                populationAndCrisis: {
+                    crowdDensity: sensorData?.areaConfig?.params?.crowdDensity,
+                    publicEvent: sensorData?.areaConfig?.params?.publicEvent,
+                    evacuationOrder: sensorData?.areaConfig?.params?.evacuationOrder,
+                    fireRisk: sensorData?.areaConfig?.params?.fireRisk,
+                    chemicalSpill: sensorData?.areaConfig?.params?.chemicalSpill
+                },
+                resources: sensorData?.areaConfig?.resources,
+                topography: {
+                    elevationAtSite: elevationSamples
+                        ? elevationSamples.find(s => Math.abs(s.lat - alert.lat) < 0.01 && Math.abs(s.lon - alert.lon) < 0.01)?.elevation
+                        : null
+                },
+                actionPlanSummary: plan.substring(0, 500) + '...' // Brief summary for quick context
+            };
+
+            const payload = {
+                city_name: (cityName || cityData?.name || 'unknown').trim().toLowerCase(),
+                health: 50, // This would ideally be calculated or passed down
+                traffic_anomalies: sensorData?.traffic?.length || 0,
+                alerts: [alert], // The active alert driving this plan
+                weather: sensorData?.weather || {},
+                action_plan: {
+                    plan: plan,
+                    source: source,
+                    timestamp: new Date().toISOString()
+                },
+                query_engine_feeder: queryEngineFeeder
+            };
+
+            console.log('🚀 [Supabase] Upserting City State:', payload);
+
+            const { error: dbError } = await supabase
+                .from('city_stats')
+                .upsert(payload, { onConflict: 'city_name' });
+
+            if (dbError) throw dbError;
+
+            // Also update local storage as a fallback
+            localStorage.setItem('citybuddy_published_action_plan', JSON.stringify({
+                alertType: alert.type,
+                alertMessage: alert.message,
+                timestamp: Date.now(),
+                plan: plan,
+                source: source
+            }));
+
+            setIsPublished(true);
+            setTimeout(() => setIsPublished(false), 3000);
+
+        } catch (err) {
+            console.error('[Supabase] Failed to publish action plan to DB:', err);
+            setError(`Failed to publish to database: ${err.message}`);
+        }
     };
 
     return (
@@ -143,11 +220,10 @@ export default function ActionPlanModal({ alert, cityData, sensorData, elevation
                     {plan && (
                         <div className="animate-in fade-in duration-700">
                             <div className="flex items-center justify-between mb-5">
-                                <div className={`text-[10px] font-black uppercase tracking-[0.2em] px-3 py-1 rounded border ${
-                                    source === 'gemini' 
-                                    ? 'text-purple-300 bg-purple-950/30 border-purple-500/30' 
+                                <div className={`text-[10px] font-black uppercase tracking-[0.2em] px-3 py-1 rounded border ${source === 'gemini'
+                                    ? 'text-purple-300 bg-purple-950/30 border-purple-500/30'
                                     : 'text-emerald-300 bg-emerald-950/30 border-emerald-500/30'
-                                }`}>
+                                    }`}>
                                     {source === 'gemini' ? '✦ Gemini Intelligence Engine' : '⚙ Local Network Logic'}
                                 </div>
                                 <button
@@ -173,11 +249,10 @@ export default function ActionPlanModal({ alert, cityData, sensorData, elevation
                         {plan && (
                             <button
                                 onClick={handlePublish}
-                                className={`px-5 py-2 rounded-lg text-xs font-black uppercase tracking-wider transition-all shadow-lg ${
-                                    isPublished 
-                                    ? 'bg-emerald-600 text-white shadow-emerald-900/40' 
+                                className={`px-5 py-2 rounded-lg text-xs font-black uppercase tracking-wider transition-all shadow-lg ${isPublished
+                                    ? 'bg-emerald-600 text-white shadow-emerald-900/40'
                                     : 'bg-blue-600 text-white shadow-blue-900/40 hover:bg-blue-500'
-                                }`}
+                                    }`}
                             >
                                 {isPublished ? '✓ Data Published' : '📢 Notify Citizens'}
                             </button>

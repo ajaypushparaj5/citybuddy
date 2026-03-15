@@ -61,29 +61,35 @@ class DataIntegrationService {
         const abnormalConditions = [];
         const p = this.areaConfig.params;
 
-        if (p.windSpeed > 60) abnormalConditions.push({ type: 'weather_wind', severity: p.windSpeed > 100 ? 'high' : 'medium', value: p.windSpeed, unit: 'km/h', desc: 'High wind speed' });
-        if (p.temperature > 35) abnormalConditions.push({ type: 'weather_heat', severity: p.temperature > 42 ? 'high' : 'medium', value: p.temperature, unit: 'C', desc: 'Extreme heat' });
-        if (p.temperature < -5) abnormalConditions.push({ type: 'weather_cold', severity: p.temperature < -15 ? 'high' : 'medium', value: p.temperature, unit: 'C', desc: 'Freezing temperatures' });
-        if (p.fog > 0.5) abnormalConditions.push({ type: 'weather_fog', severity: 'medium', value: p.fog, unit: 'index', desc: 'Low visibility fog' });
-        if (p.earthquake > 4.0) abnormalConditions.push({ type: 'crisis_earthquake', severity: p.earthquake > 6.5 ? 'high' : 'medium', value: p.earthquake, unit: 'Magnitude', desc: 'Earthquake detected' });
+        // 1. Weather & Earth
+        if (p.windSpeed > 40) abnormalConditions.push({ type: 'weather_wind', severity: p.windSpeed > 80 ? 'high' : 'medium', value: p.windSpeed, unit: 'km/h', desc: 'High wind speed' });
+        if (p.temperature > 32) abnormalConditions.push({ type: 'weather_heat', severity: p.temperature > 40 ? 'high' : 'medium', value: p.temperature, unit: 'C', desc: 'Extreme heat' });
+        if (p.temperature < 0) abnormalConditions.push({ type: 'weather_cold', severity: p.temperature < -10 ? 'high' : 'medium', value: p.temperature, unit: 'C', desc: 'Freezing temperatures' });
+        if (p.fog > 0.4) abnormalConditions.push({ type: 'weather_fog', severity: p.fog > 0.8 ? 'high' : 'medium', value: p.fog, unit: 'index', desc: 'Low visibility fog' });
+        if (p.earthquake > 3.0) abnormalConditions.push({ type: 'crisis_earthquake', severity: p.earthquake > 6.0 ? 'high' : 'medium', value: p.earthquake, unit: 'Magnitude', desc: 'Earthquake detected' });
+        if (p.rainfall > 0.3) abnormalConditions.push({ type: 'weather_rain', severity: p.rainfall > 0.7 ? 'high' : 'medium', value: p.rainfall, unit: 'index', desc: 'Heavy sustained rainfall' });
 
+        // 2. Transport & Traffic
         if (p.roadClosure) abnormalConditions.push({ type: 'transport_road_closure', severity: 'high', desc: 'Major road closure active' });
         if (p.publicTransportFailure) abnormalConditions.push({ type: 'transport_transit_failure', severity: 'high', desc: 'Public transit network failure' });
-        if (p.accidentRate > 0.6) abnormalConditions.push({ type: 'transport_high_accidents', severity: 'medium', desc: 'Elevated accident rate' });
+        if (p.accidentRate > 0.4) abnormalConditions.push({ type: 'transport_high_accidents', severity: p.accidentRate > 0.7 ? 'high' : 'medium', desc: 'Elevated accident rate' });
+        if (p.trafficDensity > 0.7) abnormalConditions.push({ type: 'transport_congestion', severity: p.trafficDensity > 0.9 ? 'high' : 'medium', desc: 'Severe traffic congestion' });
 
-        if (p.powerGridLoad > 90) abnormalConditions.push({ type: 'infra_grid_overload', severity: p.powerGridLoad > 110 ? 'high' : 'medium', value: p.powerGridLoad, unit: '%', desc: 'Power grid nearing capacity' });
+        // 3. Infrastructure & Grid
+        if (p.powerGridLoad > 85) abnormalConditions.push({ type: 'infra_grid_overload', severity: p.powerGridLoad > 105 ? 'high' : 'medium', value: p.powerGridLoad, unit: '%', desc: 'Power grid nearing capacity' });
         if (p.powerOutage) abnormalConditions.push({ type: 'infra_power_outage', severity: 'high', desc: 'Active blackout' });
-        if (p.waterPressure < 40) abnormalConditions.push({ type: 'infra_low_water_pressure', severity: 'medium', value: p.waterPressure, unit: '%', desc: 'Low water pressure' });
-        if (p.cellTowerCongestion > 0.8) abnormalConditions.push({ type: 'infra_comms_congestion', severity: 'medium', desc: 'Cellular network congested' });
+        if (p.waterPressure < 50) abnormalConditions.push({ type: 'infra_low_water_pressure', severity: p.waterPressure < 20 ? 'high' : 'medium', value: p.waterPressure, unit: '%', desc: 'Low water pressure' });
+        if (p.cellTowerCongestion > 0.7) abnormalConditions.push({ type: 'infra_comms_congestion', severity: p.cellTowerCongestion > 0.9 ? 'high' : 'medium', desc: 'Cellular network congested' });
 
-        if (p.crowdDensity > 0.8) abnormalConditions.push({ type: 'pop_crowd_crush', severity: 'high', value: p.crowdDensity, unit: 'density', desc: 'Dangerous crowd density' });
-        if (p.publicEvent) abnormalConditions.push({ type: 'pop_public_event', severity: 'low', desc: 'Major public event active' });
+        // 4. Population & Public
+        if (p.crowdDensity > 0.7) abnormalConditions.push({ type: 'pop_crowd_crush', severity: p.crowdDensity > 0.9 ? 'high' : 'medium', value: p.crowdDensity, unit: 'density', desc: 'Dangerous crowd density' });
+        if (p.publicEvent) abnormalConditions.push({ type: 'pop_public_event', severity: 'medium', desc: 'Major public event active' });
         if (p.evacuationOrder) abnormalConditions.push({ type: 'pop_evacuation', severity: 'high', desc: 'Active evacuation order' });
 
-        if (p.fireRisk > 0.7) abnormalConditions.push({ type: 'crisis_fire_risk', severity: p.fireRisk > 0.9 ? 'high' : 'medium', value: p.fireRisk, unit: 'index', desc: 'High fire spread risk' });
+        // 5. Crisis Scenarios
+        if (p.fireRisk > 0.6) abnormalConditions.push({ type: 'crisis_fire_risk', severity: p.fireRisk > 0.85 ? 'high' : 'medium', value: p.fireRisk, unit: 'index', desc: 'High fire spread risk' });
         if (p.chemicalSpill) abnormalConditions.push({ type: 'crisis_chemical_spill', severity: 'high', desc: 'Hazardous material spill' });
-        if (p.airQuality > 150) abnormalConditions.push({ type: 'crisis_poor_aqi', severity: p.airQuality > 300 ? 'high' : 'medium', value: p.airQuality, unit: 'AQI', desc: 'Hazardous air quality' });
-
+        if (p.airQuality > 100) abnormalConditions.push({ type: 'crisis_poor_aqi', severity: p.airQuality > 200 ? 'high' : 'medium', value: p.airQuality, unit: 'AQI', desc: 'Hazardous air quality' });
         const tickData = {
             timestamp: Date.now(),
             weather: weatherData,

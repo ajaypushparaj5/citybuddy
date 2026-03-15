@@ -25,7 +25,7 @@ function DigitalTwin() {
   };
 
   return (
-    <div className="flex h-full w-screen overflow-hidden">
+    <div className="app-container">
       <Sidebar
         onSubmit={handleCitySubmit}
         isLoading={isLoading}
@@ -33,10 +33,10 @@ function DigitalTwin() {
         cityData={cityData}
       />
 
-      <div className="flex-1 relative bg-slate-200 overflow-y-auto overflow-x-hidden">
+      <div className="map-container">
         {isLoading && (
-          <div className="absolute inset-0 flex items-center justify-center bg-slate-bg/80 z-50">
-            <div className="text-brand-blue font-semibold">Extracting Infrastructure...</div>
+          <div className="absolute inset-0 flex items-center justify-center bg-bg-primary/80 z-50">
+            <div className="text-accent-blue font-semibold">Extracting Infrastructure...</div>
           </div>
         )}
 

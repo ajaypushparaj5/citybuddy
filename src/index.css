@@ -138,23 +138,6 @@ body {
   overflow-x: hidden;
 }
 
-/* Custom DeckGL Tooltip Styling */
-.deck-tooltip {
-  position: absolute;
-  pointer-events: none;
-  background: var(--bg-surface);
-  color: var(--text-primary);
-  padding: 0.75rem;
-  border-radius: 0.5rem;
-  box-shadow: var(--shadow-md);
-  border: 1px solid var(--border-subtle);
-  font-size: 0.875rem;
-  font-weight: 500;
-  z-index: 100;
-  transform: translate(-50%, -100%);
-  margin-top: -10px;
-}
-
 /* Card styled status indicators */
 .status-card {
   background: var(--bg-primary);

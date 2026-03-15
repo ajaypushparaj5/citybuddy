@@ -13,82 +13,25 @@ const CapsuleNavbar = () => {
   return (
     <nav className="absolute top-8 left-1/2 -translate-x-1/2 w-[90%] max-w-[1200px] z-[100] flex justify-between items-center">
       <div className="rotate-180-hover flex items-center gap-2 cursor-pointer" onClick={() => navigate('/')}>
-        <div className="icon-to-rotate bg-[#69808d] p-2 rounded-xl">
+        <div className="icon-to-rotate bg-slate-500 p-2 rounded-xl">
           <Boxes size={24} className="text-white" />
         </div>
         <span className="font-space text-xl font-bold text-white">citybuddy</span>
       </div>
 
       <div className="glass-soft flex gap-8 px-8 py-3 rounded-full text-white/70 text-sm font-medium">
-        <a href="#features" className="hover:text-white transition-colors">Features</a>
-        <a href="#testimonials" className="hover:text-white transition-colors">Impact</a>
-        <a href="#faq" className="hover:text-white transition-colors">FAQ</a>
+        <button onClick={() => navigate('/twin')} className="hover:text-white transition-colors cursor-pointer">Digital Twin</button>
+        <button onClick={() => navigate('/citizen')} className="hover:text-white transition-colors cursor-pointer">Citizen Dashboard</button>
+        <button onClick={() => navigate('/traffic')} className="hover:text-white transition-colors cursor-pointer">Traffic AI</button>
       </div>
 
       <button 
         onClick={() => navigate('/twin')}
-        className="px-6 py-3 bg-white text-primary-dark rounded-full font-bold cursor-pointer shadow-[0_0_20px_rgba(255,255,255,0.2)] hover:scale-105 transition-transform"
+        className="px-6 py-3 bg-white text-primary-dark rounded-full font-bold cursor-pointer shadow-lg hover:scale-105 transition-transform"
       >
         Sign In
       </button>
     </nav>
-  );
-};
-
-const VibeInput = () => {
-  const [isFocused, setIsFocused] = useState(false);
-  const [text, setText] = useState("");
-
-  return (
-    <div className="relative w-full max-w-[720px] mt-10 mx-auto">
-      {/* Background Glow */}
-      <div className={`absolute -inset-1 bg-linear-to-r from-indigo-500 via-purple-500 to-pink-500 rounded-3xl blur-lg transition-opacity duration-300 ${isFocused ? 'opacity-40' : 'opacity-20'}`} />
-      
-      {/* Container */}
-      <div className="relative bg-white rounded-3xl p-5 flex flex-col gap-4 shadow-2xl">
-        <textarea 
-          placeholder="Describe the vibe you want... e.g., a dark, minimalist aesthetic with glassmorphism"
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-          onFocus={() => setIsFocused(true)}
-          onBlur={() => setIsFocused(false)}
-          className="w-full min-h-[100px] border-none outline-hidden text-lg text-[#94a3b8] placeholder:text-slate-300 resize-none font-inter"
-        />
-        <div className="flex justify-between items-center pt-2 border-t border-slate-50">
-          <div className="flex items-center gap-4">
-            <Paperclip size={20} className="text-slate-300 cursor-pointer hover:text-slate-400" />
-            <div className="flex items-center gap-2 bg-slate-50 px-3 py-1.5 rounded-lg cursor-pointer hover:bg-slate-100 transition-colors">
-              <div className="w-4 h-4 bg-[#A259FF] rounded-sm flex items-center justify-center text-[10px] text-white font-bold">F</div>
-              <span className="text-sm font-medium text-slate-400">Import</span>
-            </div>
-          </div>
-          <button className="bg-slate-100 text-slate-400 w-10 h-10 rounded-xl flex items-center justify-center cursor-pointer hover:bg-slate-200 transition-colors">
-            <ArrowUp size={20} />
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-const IntegrationBar = () => {
-  const logos = ['OSM', 'Open-Meteo', 'Mapbox', 'Supabase', 'Leaflet', 'PostGIS'];
-  return (
-    <div className="glass-soft absolute bottom-10 left-1/2 -translate-x-1/2 w-[90%] max-w-[1000px] flex rounded-[20px] overflow-hidden">
-      <div className="px-10 py-5 bg-white/5 flex items-center gap-3 border-r border-white/10">
-        <span className="font-space text-[0.75rem] font-bold text-brand-indigo uppercase">Frameworks</span>
-        <div className="flex gap-6">
-          {logos.slice(0, 3).map(l => <span key={l} className="text-white font-semibold text-[0.9rem] opacity-60">{l}</span>)}
-        </div>
-      </div>
-      <div className="flex-1 px-10 py-5 flex items-center gap-3 overflow-hidden">
-        <span className="font-space text-[0.75rem] font-bold text-white/40 uppercase">Integrations</span>
-        <div className="flex gap-8 animate-infinite-scroll whitespace-nowrap">
-          {logos.map(l => <span key={l} className="text-white font-medium opacity-40">{l} Application</span>)}
-          {logos.map(l => <span key={l} className="text-white font-medium opacity-40">{l} API</span>)}
-        </div>
-      </div>
-    </div>
   );
 };
 

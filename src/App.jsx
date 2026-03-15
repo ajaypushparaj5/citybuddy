@@ -7,25 +7,30 @@ import Navbar from './components/Navbar';
 import Traffic from './pages/Traffic';
 import './index.css';
 
+import { useLocation } from 'react-router-dom';
+
 function AppContent() {
+  const location = useLocation();
+  const showNavbar = location.pathname !== '/';
+
   return (
-    <Router>
-      <div className="app-root">
-        <Navbar />
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/twin" element={<DigitalTwin />} />
-          <Route path="/citizen" element={<CitizenDashboard />} />
-          <Route path="/traffic" element={<Traffic />} />
-        </Routes>
-      </div>
-    </Router>
+    <div className="min-h-screen bg-bg-primary">
+      {showNavbar && <Navbar />}
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/twin" element={<DigitalTwin />} />
+        <Route path="/citizen" element={<CitizenDashboard />} />
+        <Route path="/traffic" element={<Traffic />} />
+      </Routes>
+    </div>
   );
 }
 
 function App() {
   return (
-    <AppContent />
+    <Router>
+      <AppContent />
+    </Router>
   );
 }
 

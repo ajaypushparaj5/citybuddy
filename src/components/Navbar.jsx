@@ -27,6 +27,14 @@ const Navbar = () => {
           Digital Twin Engine
         </Link>
         <Link 
+          to="/citizen" 
+          className={`no-underline transition-colors pb-1 border-b-2 ${
+            location.pathname === '/citizen' ? 'text-accent-blue border-accent-blue' : 'text-white/70 border-transparent hover:text-white'
+          }`}
+        >
+          Citizen Dashboard
+        </Link>
+        <Link 
           to="/traffic" 
           className={`no-underline transition-colors pb-1 border-b-2 ${
             location.pathname === '/traffic' ? 'text-accent-blue border-accent-blue' : 'text-white/70 border-transparent hover:text-white'
